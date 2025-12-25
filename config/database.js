@@ -8,6 +8,7 @@ class Database {
       user: process.env.GEEKHUB_DB_USER,
       password: process.env.GEEKHUB_DB_PASS,
       database: process.env.GEEKHUB_DB_NAME,
+      port: process.env.GEEKHUB_DB_PORT,
       waitForConnections: true,
       connectionLimit: 30,
       keepAliveInitialDelay: 10000,

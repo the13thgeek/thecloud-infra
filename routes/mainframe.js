@@ -318,4 +318,24 @@ router.post('/ranking', asyncHandler(async (req, res) => {
   return ResponseHandler.success(res, rankings, 'Rankings retrieved');
 }));
 
+/**
+ * POST /mainframe/flight-report
+ * Get user flight report
+ */
+router.post('/flight-report', asyncHandler(async (req, res) => {
+  const { user_name } = req.body;
+
+  if (!user_name) {
+    return ResponseHandler.validationError(res, { user_name: 'Required' });
+  }
+
+  const report = await UserService.getFlightReport(user_name);
+
+  if (!report) {
+    return ResponseHandler.notFound(res, 'User flight report');
+  }
+
+  return ResponseHandler.success(res, report, 'Flight report retrieved');
+}));
+
 module.exports = router;

@@ -336,6 +336,133 @@ class UserService {
 
     return newAchievements.map(ach => `${ach.name} ${ach.tier}`).join(', ');
   }
+
+  /**
+   * Get Flight Report for Twitch Username
+   */
+  async getFlightReport(userName) {
+    const report = await db.execute(
+      `SELECT 
+        u.id,
+        u.twitch_display_name,
+        u.twitch_avatar,
+        u.exp,
+        u.is_premium,
+        u.sub_months,
+        u.reg_date,
+        u.last_checkin,
+        u.last_activity,
+        DATEDIFF(NOW(), u.reg_date) as days_as_member,
+        
+        -- EXP rank and percentile
+        (SELECT COUNT(*) + 1 
+        FROM tbl_users 
+        WHERE last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)
+          AND exp > u.exp) as exp_rank,
+        
+        ROUND(
+            ((SELECT COUNT(*) 
+              FROM tbl_users 
+              WHERE last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)
+                AND exp > u.exp) / 
+            (SELECT COUNT(DISTINCT id) 
+              FROM tbl_users 
+              WHERE last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK))) * 100,
+            1
+        ) as exp_percentile,
+        
+        -- Total active users for context
+        (SELECT COUNT(DISTINCT id) 
+        FROM tbl_users 
+        WHERE last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)) as total_active_users,
+        
+        -- Stats from stats table (with COALESCE for 0 instead of NULL)
+        COALESCE(MAX(CASE WHEN s.stat_key = 'checkin_count' THEN s.stat_value END), 0) as checkins,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'points_spend' THEN s.stat_value END), 0) as points_spent,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'redeems_count' THEN s.stat_value END), 0) as total_redeems,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'card_gacha_pulls' THEN s.stat_value END), 0) as gacha_pulls,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'card_gacha_pulls_success' THEN s.stat_value END), 0) as gacha_success,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'fortune_cookie' THEN s.stat_value END), 0) as fortune_cookies,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'bonks_redeem' THEN s.stat_value END), 0) as bonks,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'song_requests' THEN s.stat_value END), 0) as song_requests,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'incoming_raid' THEN s.stat_value END), 0) as raids_brought,
+        COALESCE(MAX(CASE WHEN s.stat_key = 'bean_redeems' THEN s.stat_value END), 0) as beans,
+        
+        -- Check-ins percentile
+        ROUND(
+            ((SELECT COUNT(*) 
+              FROM tbl_user_stats s2
+              JOIN tbl_users u2 ON s2.user_id = u2.id
+              WHERE s2.stat_key = 'checkin_count'
+                AND u2.last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)
+                AND s2.stat_value > COALESCE(MAX(CASE WHEN s.stat_key = 'checkin_count' THEN s.stat_value END), 0)) / 
+            NULLIF((SELECT COUNT(DISTINCT s3.user_id) 
+              FROM tbl_user_stats s3
+              JOIN tbl_users u3 ON s3.user_id = u3.id
+              WHERE s3.stat_key = 'checkin_count'
+                AND u3.last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)), 0)) * 100,
+            1
+        ) as checkins_percentile,
+        
+        -- Points spent percentile
+        ROUND(
+            ((SELECT COUNT(*) 
+              FROM tbl_user_stats s2
+              JOIN tbl_users u2 ON s2.user_id = u2.id
+              WHERE s2.stat_key = 'points_spend'
+                AND u2.last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)
+                AND s2.stat_value > COALESCE(MAX(CASE WHEN s.stat_key = 'points_spend' THEN s.stat_value END), 0)) / 
+            NULLIF((SELECT COUNT(DISTINCT s3.user_id) 
+              FROM tbl_user_stats s3
+              JOIN tbl_users u3 ON s3.user_id = u3.id
+              WHERE s3.stat_key = 'points_spend'
+                AND u3.last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)), 0)) * 100,
+            1
+        ) as points_percentile,
+        
+        -- Redeems percentile
+        ROUND(
+            ((SELECT COUNT(*) 
+              FROM tbl_user_stats s2
+              JOIN tbl_users u2 ON s2.user_id = u2.id
+              WHERE s2.stat_key = 'redeems_count'
+                AND u2.last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)
+                AND s2.stat_value > COALESCE(MAX(CASE WHEN s.stat_key = 'redeems_count' THEN s.stat_value END), 0)) / 
+            NULLIF((SELECT COUNT(DISTINCT s3.user_id) 
+              FROM tbl_user_stats s3
+              JOIN tbl_users u3 ON s3.user_id = u3.id
+              WHERE s3.stat_key = 'redeems_count'
+                AND u3.last_activity >= DATE_SUB(NOW(), INTERVAL 4 WEEK)), 0)) * 100,
+            1
+        ) as redeems_percentile,
+        
+        -- Chaos score (destructive redeems + bean redeems!)
+        COALESCE(MAX(CASE WHEN s.stat_key = 'shutdown_pc' THEN s.stat_value END), 0) +
+        COALESCE(MAX(CASE WHEN s.stat_key = 'bonks_redeem' THEN s.stat_value END), 0) +
+        COALESCE(MAX(CASE WHEN s.stat_key = 'ghost_calls' THEN s.stat_value END), 0) +
+        COALESCE(MAX(CASE WHEN s.stat_key = 'bean_redeems' THEN s.stat_value END), 0) as chaos_score,
+        
+        -- Helper score (helpful redeems + incoming raids)
+        COALESCE(MAX(CASE WHEN s.stat_key = 'hydrate_redeem' THEN s.stat_value END), 0) +
+        COALESCE(MAX(CASE WHEN s.stat_key = 'incoming_raid' THEN s.stat_value END), 0) as helper_score,
+        
+        -- Gacha success rate
+        ROUND(
+            (COALESCE(MAX(CASE WHEN s.stat_key = 'card_gacha_pulls_success' THEN s.stat_value END), 0) * 100.0) / 
+            NULLIF(COALESCE(MAX(CASE WHEN s.stat_key = 'card_gacha_pulls' THEN s.stat_value END), 0), 0), 
+            1
+        ) as gacha_success_rate
+
+      FROM tbl_users u
+      LEFT JOIN tbl_user_stats s ON u.id = s.user_id
+      WHERE u.twitch_display_name = ?
+      GROUP BY u.id;`,[userName]);
+
+    if(report.length === 0) return null;
+
+    return report;
+  }
+
 }
 
 module.exports = new UserService();
