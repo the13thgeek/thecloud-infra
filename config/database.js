@@ -10,9 +10,11 @@ class Database {
       database: process.env.GEEKHUB_DB_NAME,
       port: process.env.GEEKHUB_DB_PORT,
       waitForConnections: true,
-      connectionLimit: 30,
-      keepAliveInitialDelay: 10000,
+      connectionLimit: 3,
+      keepAliveInitialDelay: 0,
       enableKeepAlive: true,
+      idleTimeout: 60000,
+      maxIdle: 3,
       queueLimit: 0,
       connectTimeout: 10000
     });
