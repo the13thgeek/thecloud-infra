@@ -9,13 +9,13 @@ class Database {
       password: process.env.GEEKHUB_DB_PASS,
       database: process.env.GEEKHUB_DB_NAME,
       port: process.env.GEEKHUB_DB_PORT,
+      connectionLimit: 5,
       waitForConnections: true,
-      connectionLimit: 3,
-      keepAliveInitialDelay: 0,
-      enableKeepAlive: true,
-      idleTimeout: 60000,
-      maxIdle: 3,
       queueLimit: 0,
+      maxIdle: 4,
+      idleTimeout: 60000,      
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 0,
       connectTimeout: 10000
     });
   }
