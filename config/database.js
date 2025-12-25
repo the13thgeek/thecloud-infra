@@ -12,7 +12,7 @@ class Database {
       connectionLimit: 5,
       waitForConnections: true,
       queueLimit: 0,
-      maxIdle: 4,
+      maxIdle: 5,
       idleTimeout: 60000,      
       enableKeepAlive: true,
       keepAliveInitialDelay: 0,
