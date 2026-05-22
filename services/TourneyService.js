@@ -1,29 +1,34 @@
 const db = require('../config/database');
 const WebSocketService = require('./WebSocketService');
 const logger = require('../utils/Logger');
+const HeistMessages = require('./HeistMessages');
 
 class TourneyService {
   constructor() {
+    // Faction names
     this.TEAM_NAMES = {
-      1: 'Afterburner',
-      2: 'Concorde',
-      3: 'Stratos'
+      1: 'Afterburner', // Delta Syndicate
+      2: 'Concorde', // Sigma Collective
+      3: 'Stratos' // Zeta Enclave
     };
+    
+    // Variables/state
+    this.diamondHolder = null; // Track current Diamond Holder
+    this.lastHolder = null; // Track last Diamond Holder for cooldown checks
+    this.isActive = false; // Track if the event is active
 
-    // Active effects system
-    this.effects = {
-      blockedTeams: new Map() // teamNumber => reason
-      // Add more effect types as needed:
-      // shellShields: new Set(),
-      // pointMultiplier: {},
-      // etc.
-    };
-  }
+    // Rolls
+    this.stealRates = {
+      drop: 5,
+      success: 5,
+      fail: 90      
+    }
+  } 
 
   /**
    * Register user to a team (auto-balanced)
    */
-  async registerUser(userId) {
+  async registerUser(userId, userName) {
     // Check if already registered
     const existing = await db.executeOne(
       'SELECT team_number, points FROM tbl_tourney WHERE user_id = ?',
@@ -35,7 +40,7 @@ class TourneyService {
         success: false,
         team_number: existing.team_number,
         team_name: this.TEAM_NAMES[existing.team_number],
-        message: `You are already in ${this.TEAM_NAMES[existing.team_number]}! You have ${existing.points} points.`
+        message: `You are already assigned to the ${this.TEAM_NAMES[existing.team_number]}! The Black Diamond knows your mark. [Points: ${existing.points}]`
       };
     }
 
@@ -67,17 +72,27 @@ class TourneyService {
     );
 
     // Issue team card
-    const teamCards = { 1: 25, 2: 26, 3: 27 }; // Afterburner, Concorde, Stratos
-    const CardService = require('./CardService');
-    await CardService.addCardToUser(userId, teamCards[selectedTeam]);
+    // const teamCards = { 1: 33, 2: 34, 3: 35 }; // Delta Syndicate, Sigma Collective, Zeta Enclave
+    // const CardService = require('./CardService');
+    // await CardService.addCardToUser(userId, teamCards[selectedTeam]);
 
     return {
       success: true,
       team_number: selectedTeam,
       team_name: this.TEAM_NAMES[selectedTeam],
-      message: `Welcome to ${this.TEAM_NAMES[selectedTeam]}! Your team card has been added.`
+      message: this.getRandomMessage('REGISTER_MESSAGES', userName, this.TEAM_NAMES[selectedTeam])
+      //message: this.getRegisterMessage(userName, this.TEAM_NAMES[selectedTeam])
     };
   }
+
+  /**
+   * getRegisterMessage
+   */
+  getRegisterMessage(username, factionName) {
+    const template = this.REGISTER_MESSAGES[Math.floor(Math.random() * this.REGISTER_MESSAGES.length)];
+    return template(username, factionName);
+  }
+
 
   /**
    * Get user's faction info
@@ -95,14 +110,16 @@ class TourneyService {
         user_name: userName,
         team_number: null,
         team_name: null,
-        message: `User ${userName} not found in database`
+        message: `User ${userName} not found in database.`
       };
     }
+    logger.info(`Found user in database: ${JSON.stringify(user)}`);
 
     const teamData = await db.executeOne(
       'SELECT team_number, points FROM tbl_tourney WHERE user_id = ?',
       [user.id]
     );
+    logger.info(`Found team data for user ${userName}: ${JSON.stringify(teamData)}`);
 
     if (!teamData) {
       return {
@@ -111,7 +128,7 @@ class TourneyService {
         user_name: userName,
         team_number: null,
         team_name: null,
-        message: `${userName} is not registered for the tournament`
+        message: `${userName} is not registered for the event. Please type !register to join a faction and start earning points!`
       };
     }
 
@@ -136,26 +153,7 @@ class TourneyService {
         success: false,
         message: faction.message
       };
-    }
-
-    // Check for blocking effects
-    if (this.effects.blockedTeams.has(faction.team_number)) {
-      const reason = this.effects.blockedTeams.get(faction.team_number);
-      
-      // Remove one-time effect
-      this.effects.blockedTeams.delete(faction.team_number);
-      
-      // Log blocked attempt
-      await this.logScore(userName, 0, `BLOCKED: ${reason}`, false);
-      
-      // Broadcast update
-      WebSocketService.broadcast({ type: 'SCORE_UPDATE' });
-
-      return {
-        success: false,
-        message: `Your team ${faction.team_name} is grounded: ${reason}`
-      };
-    }
+    }    
 
     // Award points
     await db.execute(
@@ -167,7 +165,7 @@ class TourneyService {
     await this.logScore(userName, points, details, true);
 
     // Broadcast update
-    broadcast({ type: 'SCORE_UPDATE' });
+    WebSocketService.broadcast({ type: 'SCORE_UPDATE' });
 
     return {
       success: true,
@@ -224,15 +222,10 @@ class TourneyService {
         mvp_points: mvpInfo?.mvp_points || null
       };
     });
-
-    // Format active effects for client
-    const activeEffects = {
-      blocked_teams: [...this.effects.blockedTeams.entries()]
-    };
+    
 
     return {
-      scores,
-      effects: activeEffects
+      scores
     };
   }
 
@@ -246,83 +239,125 @@ class TourneyService {
     );
   }
 
+  /* HEIST EVENT METHODS */
+
+  /**
+   * Initialize/reset heist event state
+   */
+  initDiamondHeist() {
+    this.diamondHolder = null;
+    this.lastHolder = null;
+    this.isActive = false;
+    logger.info('The Black Diamond Heist event has begun!');    
+  }
+
+  /** 
+   * Drop the diamond
+   */
+  dropDiamond() {
+    let message;
+    this.isActive = true;
+
+    // Check if this is the first drop or if the current holder dropped it
+    if(!this.diamondHolder) {
+      //const template = this.INITIAL_DROP_MESSAGES[Math.floor(Math.random() * this.INITIAL_DROP_MESSAGES.length)];logger.info(message);
+      message = this.getRandomMessage('INITIAL_DROP_MESSAGES');
+      logger.info(message);
+    } else {
+      //const template = this.DROP_MESSAGES[Math.floor(Math.random() * this.DROP_MESSAGES.length)];
+      message = this.getRandomMessage('DROP_MESSAGES', this.diamondHolder.displayName);
+      logger.info(message);
+      this.lastHolder = this.diamondHolder;
+      this.diamondHolder = null;
+    }
+    return message;
+  }
+
+  /**
+   * Retrieve diamond holder info
+   */
+  getDiamondHolder() {
+    return this.diamondHolder;
+  }
+
+  /**
+   * Issue diamond to user
+   */
+  async setDiamondHolder(user) {
+    this.clearDiamondHolder();
+    this.diamondHolder = user;
+    
+    logger.info(`${user.twitch_display_name} has become the Diamond Holder!`);
+
+    return {
+      success: true,
+      user_name: user.twitch_display_name,
+      message: `${user.twitch_display_name} has claimed the Black Diamond!`
+    };
+  } 
+
+  /**
+   * get random message by key with optional arguments for template functions
+   */
+  getRandomMessage(key, ...args) {
+    logger.debug(`Retrieving random message for key: ${key} with args: ${args}`);
+    const messages = HeistMessages[key];
+    logger.debug(`Found messages: ${messages ? messages.length : 0} for key: ${key}`);
+    if (!messages) return null;
+    const i = Math.floor(Math.random() * messages.length);
+    return messages[i](...args);
+  }
+
+  /**
+   * getStealRates
+   */
+  getStealRates() {
+    return this.stealRates;
+  }
+
+  /**
+   * setStealRates   */
+  setStealRates(newRates = {}) {
+    this.stealRates = { ...this.stealRates, ...newRates };
+  }
+
   /**
    * Check if user is on cooldown
    */
-  async checkCooldown(userName, cooldownMinutes = 60) {
-    const lastActivity = await db.executeOne(`
-      SELECT TIMESTAMPDIFF(SECOND, transaction_time, NOW()) AS seconds_passed 
-      FROM tbl_tourney_log
-      WHERE source = ? AND has_cooldown = 1
-      ORDER BY transaction_time DESC
-      LIMIT 1
-    `, [userName]);
+  // async checkCooldown(userName, cooldownMinutes = 60) {
+  //   const lastActivity = await db.executeOne(`
+  //     SELECT TIMESTAMPDIFF(SECOND, transaction_time, NOW()) AS seconds_passed 
+  //     FROM tbl_tourney_log
+  //     WHERE source = ? AND has_cooldown = 1
+  //     ORDER BY transaction_time DESC
+  //     LIMIT 1
+  //   `, [userName]);
 
-    if (!lastActivity) {
-      return { active: false };
-    }
+  //   if (!lastActivity) {
+  //     return { active: false };
+  //   }
 
-    const cooldownSeconds = cooldownMinutes * 60;
-    const { seconds_passed } = lastActivity;
+  //   const cooldownSeconds = cooldownMinutes * 60;
+  //   const { seconds_passed } = lastActivity;
 
-    if (seconds_passed >= cooldownSeconds) {
-      return { active: false };
-    }
+  //   if (seconds_passed >= cooldownSeconds) {
+  //     return { active: false };
+  //   }
 
-    const remaining = cooldownSeconds - seconds_passed;
-    const remainingMinutes = Math.floor(remaining / 60);
-    const remainingSeconds = remaining % 60;
+  //   const remaining = cooldownSeconds - seconds_passed;
+  //   const remainingMinutes = Math.floor(remaining / 60);
+  //   const remainingSeconds = remaining % 60;
 
-    const label = remainingMinutes >= 1
-      ? `${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`
-      : `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
+  //   const label = remainingMinutes >= 1
+  //     ? `${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`
+  //     : `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
 
-    return {
-      active: true,
-      remaining_seconds: remaining,
-      wait_label: label
-    };
-  }
-
-  /**
-   * Activate tournament effect
-   */
-  activateEffect(teamNumber, effectType, details = null) {
-    switch (effectType) {
-      case 'block_team':
-        this.effects.blockedTeams.set(teamNumber, details || 'System Malfunction');
-        break;
-
-      // Add more effect types here:
-      // case 'point_multiplier':
-      //   this.effects.pointMultiplier[teamNumber] = { 
-      //     multiplier: 2, 
-      //     expiresAt: Date.now() + (5 * 60 * 1000) 
-      //   };
-      //   break;
-
-      default:
-        throw new Error(`Unknown effect type: ${effectType}`);
-    }
-
-    // Broadcast effect activation
-    WebSocketService.broadcast({ type: 'SCORE_UPDATE' });
-  }
-
-  /**
-   * Clear effect
-   */
-  clearEffect(teamNumber, effectType) {
-    switch (effectType) {
-      case 'block_team':
-        this.effects.blockedTeams.delete(teamNumber);
-        break;
-      default:
-        throw new Error(`Unknown effect type: ${effectType}`);
-    }
-
-    WebSocketService.broadcast({ type: 'SCORE_UPDATE' });
-  }
+  //   return {
+  //     active: true,
+  //     remaining_seconds: remaining,
+  //     wait_label: label
+  //   };
+  // }
 
   /**
    * Get team standings (sorted by points)

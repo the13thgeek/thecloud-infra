@@ -59,6 +59,20 @@ class UserService {
   }
 
   /**
+   * Get user by Twitch display name
+   */
+  async getUserByDisplayName(displayName) {
+    const user = await db.executeOne(
+      'SELECT * FROM tbl_users WHERE twitch_display_name = ?',
+      [displayName]
+    );
+
+    if (!user) return null;
+
+    return await this.enrichUserData(user);
+  }
+
+  /**
    * Get or create user by Twitch ID
    */
   async getUserByTwitchId(twitchId, displayName, avatar = null, isPremium = null) {
@@ -163,6 +177,17 @@ class UserService {
   }
 
   /**
+   * Get user's team info
+   */
+  async getUserTeam(userId) {
+    const team = await db.executeOne(
+      `SELECT team_number from tbl_tourney WHERE user_id = ?`,
+      [userId]
+    );
+    return team ? team.team_number : null;
+  }
+
+  /**
    * Get user's cards
    */
   async getUserCards(userId, isPremium = false) {
@@ -250,21 +275,7 @@ class UserService {
        ORDER BY ua.achieved_at DESC, a.name, a.tier DESC`,
       [userId]
     );
-  }
-
-  /**
-   * Get user's team
-   */
-  async getUserTeam(userId) {
-    const TEAM_NAMES = { 1: 'Afterburner', 2: 'Concorde', 3: 'Stratos' };
-    
-    const team = await db.executeOne(
-      'SELECT team_number FROM tbl_tourney WHERE user_id = ? LIMIT 1',
-      [userId]
-    );
-
-    return team ? TEAM_NAMES[team.team_number] : null;
-  }
+  } 
 
   /**
    * Update user timestamp

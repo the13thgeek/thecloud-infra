@@ -1,0 +1,238 @@
+const express = require('express');
+const router = express.Router();
+const { ResponseHandler, asyncHandler } = require('../utils/ResponseHandler');
+const UserService = require('../services/UserService');
+const TourneyService = require('../services/TourneyService');
+const Logger = require('../utils/Logger');
+
+// POST /tourney/register
+router.post('/register', asyncHandler(async (req, res) => {
+  const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar } = req.body;
+  const user = await UserService.getUserByTwitchId(twitch_id, twitch_display_name, twitch_avatar, UserService.isPremium(twitch_roles));
+  const regData = await TourneyService.registerUser(user.id, twitch_display_name);
+
+  return ResponseHandler.success(res, {
+    team_number: regData.team_number,
+    team_name: regData.team_name,
+    message: regData.message
+  }, 'Registration successful');
+}));
+
+// POST /tourney/init
+router.post('/init', asyncHandler(async (req, res) => {
+  TourneyService.initDiamondHeist();
+  Logger.info('Tournament initialized/reset');
+  return ResponseHandler.success(res, {}, 'Tournament initialized');
+}));
+
+// POST /tourney/drop - signal start of round or perform drop
+router.post('/drop', asyncHandler(async (req, res) => {
+  const message = TourneyService.dropDiamond();
+  Logger.info(message);
+  return ResponseHandler.success(res, { message }, 'Diamond dropped');
+}));
+
+// POST /tourney/grab
+router.post('/grab', asyncHandler(async (req, res) => {
+  const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar } = req.body;
+
+  // Check if game is active
+  if( !TourneyService.isActive ) {
+    const message = TourneyService.getRandomMessage('PREMATURE_GRAB_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if the diamond is still available
+  Logger.info(`Current diamond holder: ${JSON.stringify(TourneyService.getDiamondHolder())}`);
+  if( TourneyService.getDiamondHolder() !== null ) {
+    const message = TourneyService.getRandomMessage('GRAB_UNAVAILABLE_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if user just dropped the diamond
+  if (TourneyService.lastHolder?.twitchId === twitch_id) {
+    const message = TourneyService.getRandomMessage('DROP_GRAB_ATTEMPT_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);    
+  }
+
+  // Check if the user is already holding the diamond (edge case for multiple rapid requests)
+  if (TourneyService.getDiamondHolder()?.twitchId === twitch_id) {
+    const message = TourneyService.getRandomMessage('ALREADY_HOLDING_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);    
+  }
+
+  // Check if user is registered for the event
+  const user = await UserService.getUserByTwitchId(twitch_id, twitch_display_name, twitch_avatar, UserService.isPremium(twitch_roles));
+  if (!user) {
+      return ResponseHandler.error(res, `Sorry @${twitch_display_name}, you must be registered for the event to grab the Black Diamond. Please type !tourney to join a faction and start earning points!`, 403);
+  }
+
+  // Check if user is on a faction
+  const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+  Logger.info(JSON.stringify(userFaction));
+  if (!userFaction.success) {
+    return ResponseHandler.error(res, `@${twitch_display_name}, you need to be on a faction to grab the Black Diamond! Join a faction by typing !tourney in chat.`, 403);
+  }
+
+  // All checks passed, attempt to grab the diamond
+  TourneyService.diamondHolder = {
+    twitchId: twitch_id,
+    displayName: twitch_display_name,
+    avatar: twitch_avatar,
+    faction: userFaction.team_name,
+    factionId: userFaction.team_number
+  }
+
+  // Award points
+  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Grab');
+
+  const message = TourneyService.getRandomMessage('GRAB_MESSAGES', twitch_display_name, userFaction.team_name);
+  return ResponseHandler.success(res, {
+    twitchId: twitch_id,
+    displayName: twitch_display_name,
+    avatar: twitch_avatar
+  }, message);
+
+}));
+
+
+// POST /tourney/steal
+router.post('/steal', asyncHandler(async (req, res) => {
+  const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, target_user } = req.body;
+  const attemptMessage = TourneyService.getRandomMessage('STEAL_ATTEMPT_MESSAGES', twitch_display_name, target_user);
+
+  // Check if target user is specified  
+  if (!target_user) {
+    const message = TourneyService.getRandomMessage('STEAL_MISSING_TARGET_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if game is active and/or if the diamond is currently held by someone
+  if( !TourneyService.isActive || !TourneyService.getDiamondHolder() ) {
+    const message = TourneyService.getRandomMessage('PREMATURE_GRAB_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check is user is trying to steal from self
+  if (TourneyService.getDiamondHolder().displayName === twitch_display_name) {
+    const message = TourneyService.getRandomMessage('STEAL_SELF_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if user is on a faction
+  const targetUserFaction = await TourneyService.getUserFaction(target_user);
+  Logger.info(JSON.stringify(targetUserFaction));
+  if (!targetUserFaction.success) {
+    return ResponseHandler.error(res, `@${target_user} is not registered for the event.`, 403);
+  }
+
+  // Check if user is stealing from their own faction
+  const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+  
+  if (userFaction.team_number === targetUserFaction.team_number) {
+    const message = TourneyService.getRandomMessage('STEAL_TEAMMATE_MESSAGES', twitch_display_name, target_user);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if user is holding the diamond
+  if (TourneyService.getDiamondHolder().displayName !== target_user) {
+
+    // Award false accusation points to target
+    TourneyService.awardPoints(target_user, 1, 'False Accusation Bonus');
+    
+    const message = TourneyService.getRandomMessage('STEAL_INVALID_MESSAGES', twitch_display_name, target_user);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // All checks passed, attempt steal, roll dice
+  const { drop, success } = TourneyService.stealRates;
+  const roll = Math.random() * 100;
+  Logger.info(`Steal attempt by @${twitch_display_name} on @${target_user}. Roll: ${roll.toFixed(2)} (Drop: ${drop}%, Success: ${success}%)`);
+
+  if (roll <= drop) {
+    // 5% fumble - current holder drops the diamond
+    let message = TourneyService.dropDiamond();
+    //return ResponseHandler.success(res, { outcome: 'drop', message }, message);
+    return ResponseHandler.error(res, message, 403);
+  } else if (roll <= drop + success) {
+    // 50% success - steal successful
+    TourneyService.diamondHolder = {
+      twitchId: twitch_id,
+      displayName: twitch_display_name,
+      avatar: twitch_avatar,
+      faction: userFaction.team_name,
+      factionId: userFaction.team_number
+    };   
+
+    // Award points
+    TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Steal');
+
+    const message = TourneyService.getRandomMessage('STEAL_SUCCESS_MESSAGES', twitch_display_name, target_user);
+    return ResponseHandler.success(res, { outcome: 'success', message }, message);
+  } else {
+    // 45% failure - steal fails
+    const message = TourneyService.getRandomMessage('STEAL_FAIL_MESSAGES', twitch_display_name, target_user);
+    //return ResponseHandler.success(res, { outcome: 'fail', message }, message);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+}));
+
+// POST /tourney/pass
+router.post('/pass', asyncHandler(async (req, res) => {
+  const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, target_user } = req.body;
+
+  // Check if game is active and/or if the diamond is currently held by someone
+  if( !TourneyService.isActive || !TourneyService.getDiamondHolder() ) {
+    const message = TourneyService.getRandomMessage('PREMATURE_GRAB_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if user actually has the diamond
+  if (TourneyService.getDiamondHolder().twitchId !== twitch_id) {
+    const message = TourneyService.getRandomMessage('PASS_NOT_HOLDER_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if target user exists
+  const targetUserFaction = await TourneyService.getUserFaction(target_user);
+  Logger.info(JSON.stringify(targetUserFaction));
+  if (!targetUserFaction.success) {
+    const message = TourneyService.getRandomMessage('PASS_INVALID_TARGET_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if user is passing to theirself
+  if (TourneyService.getDiamondHolder().displayName === target_user) {
+    const message = TourneyService.getRandomMessage('PASS_SELF_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // Check if user is passing to someone on the other team
+  const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+  if (userFaction.team_number !== targetUserFaction.team_number) {
+    const message = TourneyService.getRandomMessage('PASS_WRONG_FACTION_MESSAGES', twitch_display_name, target_user);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  // All checks passed, perform pass
+  // Get new user data
+  const newHolder = await UserService.getUserByDisplayName(target_user);
+
+  TourneyService.diamondHolder = {
+    twitchId: newHolder.twitch_id,
+    displayName: newHolder.twitch_display_name,
+    avatar: newHolder.twitch_avatar,
+    faction: targetUserFaction.team_name,
+    factionId: targetUserFaction.team_number
+  }
+
+  // Award points
+  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Pass');
+
+  const message = TourneyService.getRandomMessage('PASS_SUCCESS_MESSAGES', twitch_display_name, target_user, userFaction.team_name);
+  return ResponseHandler.success(res, message, message);
+
+}));
+
+module.exports = router;

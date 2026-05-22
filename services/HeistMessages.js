@@ -1,0 +1,192 @@
+module.exports = {
+  PREMATURE_GRAB_MESSAGES : [
+    (username) => `Easy, @${username}. Nothing's hit the floor yet. Patience.`,
+    (username) => `Hold on, @${username}. The Black Diamond is still secured!`,
+    (username) => `Not so fast, @${username}. The Black Diamond hasn't been dropped!`,
+  ],
+
+  INITIAL_DROP_MESSAGES : [
+    () => `The Black Diamond has been dropped! Who will claim it?`,
+    () => `The Black Diamond is loose! Grab it if you can!`,
+    () => `The Black Diamond has hit the floor! Who will be the first to claim it?`
+  ],
+
+  REGISTER_MESSAGES : [
+    (username, factionName) => `@${username} has joined the crew. Welcome to ${factionName}.`,
+    (username, factionName) => `${factionName} gains another body. Welcome aboard, @${username}.`,
+    (username, factionName) => `@${username} is now running with ${factionName}. Don't slow them down.`,
+    (username, factionName) => `The roster grows. @${username} reports to ${factionName}, effective now.`,
+    (username, factionName) => `${factionName} has a new face. Make it count, @${username}.`,
+    (username, factionName) => `@${username} passed the vetting. ${factionName} opens the door — once.`,
+    (username, factionName) => `${factionName} has been watching @${username} for a while. Today they make it official.`,
+    (username, factionName) => `@${username} is in. ${factionName} doesn't recruit lightly. Don't make them regret it.`,
+    (username, factionName) => `The call went out. @${username} answered. ${factionName} welcomes their newest operative.`,
+    (username, factionName) => `@${username} signed on with ${factionName}. No going back now.`
+  ],
+
+  DROP_MESSAGES : [
+    (username) => `The Black Diamond slips from @${username}'s grasp and clatters to the ground!`,
+    (username) => `Oh no! @${username} fumbled the Black Diamond and it fell to the floor!`,
+    (username) => `The Black Diamond has been dropped by @${username}! It hits the ground with a thud!`,
+    (username) => `Yikes! @${username} lost hold of the Black Diamond and it crashes down!`
+  ],
+
+  GRAB_MESSAGES : [
+    (username, factionName) => `@${username} has claimed the Black Diamond for the ${factionName}!`,
+    (username, factionName) => `The Black Diamond is now in the possession of @${username} from the ${factionName}!`,
+    (username, factionName) => `A new Diamond Holder emerges! @${username} of the ${factionName} has claimed the prize!`,
+    (username, factionName) => `The Black Diamond has found a new home with @${username} representing the ${factionName}!`
+  ],
+
+  ALREADY_HOLDING_MESSAGES: [
+    (username) => `@${username} tries to grab the Black Diamond. They are already holding the Black Diamond.`,
+    (username) => `@${username} already has it. This is not a drill. They already have it.`,
+    (username) => `The Black Diamond is in @${username}'s hands. @${username} is trying to grab the Black Diamond. We'll give them a moment.`,
+    (username) => `@${username} reaches for the diamond they are currently holding. The crew needs a break.`,
+    (username) => `@${username} already has the Black Diamond. What exactly is the plan here.`
+  ],
+
+  GRAB_UNAVAILABLE_MESSAGES : [
+    (username) => `Sorry, @${username}, the Black Diamond has already been picked up!`,
+    (username) => `Too late, @${username}. The Black Diamond is no longer on the floor!`,
+    (username) => `@${username}, the Black Diamond has already been claimed. Better luck next time!`,
+    (username) => `The Black Diamond is off the floor, @${username}. Someone else got to it first!`
+  ],
+
+  DROP_GRAB_ATTEMPT_MESSAGES : [
+    (username) => `@${username}, you just had it in your hands. Catch your breath — let someone else make a move first.`,
+    (username) => `Easy, @${username}. You dropped it, now you wait. That's the code.`,
+    (username) => `Not yet @${username}. You had your turn — give the others a shot at it first.`,
+    (username) => `Hold on, @${username}. The Black Diamond is on the floor now. Let it settle before you go for it again.`,
+    (username) => `@${username} persistence isn't the same as eligibility. Wait for the next drop before you try again!`
+  ],
+
+  STEAL_MISSING_TARGET_MESSAGES : [
+    (username) => `@${username}, you need to specify a target to steal from!`,
+    (username) => `Don't forget the target, @${username}! Who are you trying to steal from?`,
+    (username) => `@${username}, you need to name a target for your steal attempt!`,
+    (username) => `Steal who, @${username}? You need to specify a target!`,
+    (username) => `@${username}, you forgot to include a target for your steal attempt!`
+  ],
+  
+  STEAL_ATTEMPT_MESSAGES : [
+    (username1, username2) => `@${username1} is making a move on @${username2}. The crew holds their breath...`,
+    (username1, username2) => `@${username1} has eyes on @${username2}. Closing in slowly...`,
+    (username1, username2) => `@${username1} spots an opening. @${username2} doesn't know it yet...`,
+    (username1, username2) => `The play is in motion. @${username1} is going for @${username2}'s Black Diamond...`,
+    (username1, username2) => `@${username1} makes their approach. All eyes on @${username2}...`
+  ],
+
+  STEAL_SUCCESS_MESSAGES : [
+    (username1, username2) => `@${username1} moves fast — too fast for @${username2}. The Black Diamond changes hands!`,
+    (username1, username2) => `Clean lift! @${username2} didn't see @${username1} coming until it was already gone.`,
+    (username1, username2) => `@${username1} plays it cool, waits for the moment, and takes it. @${username2} is left empty handed!`,
+    (username1, username2) => `@${username2} blinked. That's all it took! @${username1} walks away with the Black Diamond.`,
+    (username1, username2) => `Textbook. @${username1} gets in, snatches the Black Diamond, gets out! @${username2} never stood a chance.`
+  ],
+
+  STEAL_SELF_MESSAGES : [
+    (username) => `@${username} attempts to steal from themselves. The Black Diamond remains exactly where it was.`,
+    (username) => `@${username} is their own target apparently. The crew doesn't know what to say.`,
+    (username) => `@${username} tries to steal the Black Diamond from @${username}. This investigation is ongoing.`,
+    (username) => `@${username} reached into their own pocket. Found the diamond. It was theirs the whole time. Nothing happened.`,
+    (username) => `The Black Diamond was stolen from @${username} by @${username}. We're all just going to move past this.`
+  ],
+
+  STEAL_FAIL_MESSAGES : [
+    (username1, username2) => `@${username1} makes a move on @${username2} — but @${username2} sees it coming. The Black Diamond doesn't move!`,
+    (username1, username2) => `@${username1} gets close. Not close enough! @${username2} tightens their grip.`,
+    (username1, username2) => `Bold move from @${username1}. @${username2} doesn't even flinch. Better luck next time!`,
+    (username1, username2) => `@${username1} thought they had it. @${username2} had other plans!`,
+    (username1, username2) => `The approach was sloppy. @${username2} clocks @${username1} before they get within reach. The Black Diamond stays put!`
+  ],
+
+  STEAL_DROP_MESSAGES : [
+    (username1, username2) => `@${username1} reaches for it — @${username2} pulls back hard. The Black Diamond slips from both of them and hits the floor!`,
+    (username1, username2) => `Too aggressive! @${username1} and @${username2} fumble the exchange. The Black Diamond is down. Somebody grab it!`,
+    (username1, username2) => `@${username1} makes the grab — @${username2} fights back... neither wins. The Black Diamond is on the floor!`,
+    (username1, username2) => `The struggle between @${username1} and @${username2} ends badly for everyone. The Black Diamond drops. It's anyone's game!`,
+    (username1, username2) => `@${username2} wasn't going down without a fight. Cost them both. The Black Diamond is loose!`
+  ],
+
+  STEAL_INVALID_MESSAGES : [
+    (username1, username2) => `@${username1} tries to steal from @${username2}, but they don't even have the Black Diamond! Oops!`,
+    (username1, username2) => `@${username1} makes a move for @${username2}'s Black Diamond... but @${username2} isn't the holder! That's embarrassing.`,
+    (username1, username2) => `@${username1} tries to steal from @${username2}, but @${username2} isn't holding the Black Diamond. Wrong target!`,
+    (username1, username2) => `@${username1} goes for a steal — but @${username2} doesn't have the Black Diamond! Better check before you wreck, @${username1}.`,
+    (username1, username2) => `@${username1} attempts to steal from @${username2}, but they come up empty. @${username2} isn't the holder!`
+  ],
+
+  STEAL_INVALID_TARGET_MESSAGES : [
+    (username) => `@${username} picks a target that doesn't exist. Solid plan.`,
+    (username) => `@${username} cases someone who isn't even in the system. Back to the drawing board.`,
+    (username) => `No record of that target. @${username} just robbed a ghost.`,
+    (username) => `@${username} named a name nobody recognises. The crew is confused.`,
+    (username) => `That person isn't in the system. @${username} wasted a perfectly good attempt.`,
+  ],
+
+  STEAL_TEAMMATE_MESSAGES : [
+    (username1, username2) => `@${username1} tries to steal from their own teammate @${username2}. That's not how this works, @${username1}!`,
+    (username1, username2) => `@${username1} reaches for the Black Diamond... but it's with their own teammate @${username2}. Awkward!`,
+    (username1, username2) => `@${username1} moves on @${username2} — then notices the badge. Same crew. This stays between them... and now, also chat.`,
+    (username1, username2) => `@${username1} gets halfway there before realising @${username2} is on their side. Awkward. Nobody saw that!`,
+    (username1, username2) => `@${username1} and @${username2} are on the same team. Use !pass. This isn't that kind of heist.`,
+    (username1, username2) => `@${username1} almost robbed their own teammate. @${username2} is not impressed. The group leader facepalms.`,
+    (username1, username2) => `That's friendly fire, @${username1}. @${username2} is with you. Save it for the others!`
+  ],
+
+  NOTHING_TO_STEAL_MESSAGES : [
+    (username) => `@${username} tries to steal the Black Diamond — but Black Diamond is still secured in the vault.`,
+    (username) => `@${username} makes a move for the Black Diamond, but it's not on the floor. It's still locked up tight!`,
+    (username) => `@${username} attempts a steal, but the Black Diamond isn't in play. It's still safe in the vault!`,
+    (username) => `@${username} goes for the Black Diamond, but it's not on the floor. The vault holds strong!`,
+    (username) => `@${username} tries to steal the Black Diamond, but it's still secure. No heist for you!`
+  ],
+
+  PASS_SUCCESS_MESSAGES: [
+    (username1, username2, factionName) => `@${username1} makes the handoff. @${username2} takes possession. ${factionName} keeps the Black Diamond in play!`,
+    (username1, username2, factionName) => `Clean transfer! @${username1} to @${username2}. ${factionName} stays in control.`,
+    (username1, username2, factionName) => `@${username1} trusts @${username2} with the Black Diamond. ${factionName} moves it quietly!`,
+    (username1, username2, factionName) => `The Black Diamond changes hands within ${factionName}. @${username1} passes to @${username2}. Smart play!`,
+    (username1, username2, factionName) => `@${username1} gets it to @${username2} without a sound. ${factionName} keeps their grip on the job!`
+  ],
+
+  PASS_NOT_HOLDER_MESSAGES: [
+    (username) => `@${username} tries to pass the Black Diamond. They don't have the Black Diamond. Whoops!`,
+    (username) => `@${username} reaches into their pocket. Finds nothing. The Black Diamond is not yours to pass!`,
+    (username) => `Bold of @${username} to pass something they're not holding. The crew is concerned...`,
+    (username) => `@${username} you don't have it. You never had it. Please sit down.`,
+    (username) => `The Black Diamond is not in @${username}'s possession. This is not up for debate.`
+  ],
+
+  PASS_WRONG_FACTION_MESSAGES: [
+    (username1, username2) => `@${username1} just tried to hand the Black Diamond to the enemy. @${username2} is not on your crew. Did you even read the briefing?`,
+    (username1, username2) => `@${username1}. @${username2} is not your teammate. The diamond stays where it is. Please pay attention.`,
+    (username1, username2) => `Bold strategy from @${username1} — handing the Black Diamond directly to the opposition. Truly remarkable. The diamond stays put.`,
+    (username1, username2) => `@${username1} attempts to pass to @${username2}. A rival. In front of everyone. The crew is having a meeting after this.`,
+    (username1, username2) => `@${username1} that was either a mistake or a betrayal. Either way, @${username2} isn't getting the diamond. Check your roster.`
+  ],
+
+  PASS_SELF_MESSAGES: [
+    (username) => `@${username} tries to pass the Black Diamond... to themselves. The crew has no words.`,
+    (username) => `@${username} that's not a pass. That's just standing there holding it. Nothing has changed.`,
+    (username) => `@${username} attempts a self-pass. The Black Diamond remains exactly where it was... as expected.`,
+    (username) => `@${username} is passing to @${username}. This is not how passing works. This is not how any of this works!`,
+    (username) => `The Black Diamond went from @${username} to @${username}. Incredible. Nothing changed.`
+  ],
+
+  PASS_INVALID_TARGET_MESSAGES: [
+    (username1) => `@${username1} tries to pass to someone who doesn't exist. The diamond stays put.`,
+    (username1) => `No record of that operative, @${username1}. Pass cancelled.`,
+    (username1) => `@${username1} passed to a ghost. Again. The diamond isn't moving.`,
+    (username1) => `That person isn't in the system, @${username1}. Double check the name and try again.`
+  ],
+
+  DIAMOND_DROP_MESSAGE: [
+    () => `💎 The Black Diamond hits the floor! First one to !grab it claims it!!`
+  ],
+
+  DIAMOND_WARNING_MESSAGE: [
+    () => `⚠️ The Black Diamond's security signature is destabilizing. Someone's grip is slipping — the floor is about to get very interesting!`
+  ]
+};

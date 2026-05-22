@@ -115,6 +115,7 @@ app.use('/srs', require('./routes/srs'));
 app.use('/twitch', require('./routes/twitch'));
 app.use('/mainframe', require('./routes/mainframe'));
 app.use('/status', require('./routes/status'));
+app.use('/tourney', require('./routes/tourney'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
