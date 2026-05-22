@@ -20,8 +20,8 @@ class TourneyService {
     // Rolls
     this.stealRates = {
       drop: 5,
-      success: 5,
-      fail: 90      
+      success: 50,
+      fail: 45
     }
   } 
 
