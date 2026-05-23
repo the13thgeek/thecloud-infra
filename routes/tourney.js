@@ -5,6 +5,10 @@ const UserService = require('../services/UserService');
 const TourneyService = require('../services/TourneyService');
 const Logger = require('../utils/Logger');
 
+// Basic helpers
+// Remove @ from username if present and trim whitespace
+const stripAt = (username) => username?.replace(/^@/, '').trim();
+
 // POST /tourney/register
 router.post('/register', asyncHandler(async (req, res) => {
   const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar } = req.body;
@@ -98,10 +102,11 @@ router.post('/grab', asyncHandler(async (req, res) => {
 // POST /tourney/steal
 router.post('/steal', asyncHandler(async (req, res) => {
   const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, target_user } = req.body;
-  const attemptMessage = TourneyService.getRandomMessage('STEAL_ATTEMPT_MESSAGES', twitch_display_name, target_user);
+  //const attemptMessage = TourneyService.getRandomMessage('STEAL_ATTEMPT_MESSAGES', twitch_display_name, target_user);
+  const targetUser = stripAt(target_user);
 
   // Check if target user is specified  
-  if (!target_user) {
+  if (!targetUser) {
     const message = TourneyService.getRandomMessage('STEAL_MISSING_TARGET_MESSAGES', twitch_display_name);
     return ResponseHandler.error(res, message, 403);
   }
@@ -119,34 +124,34 @@ router.post('/steal', asyncHandler(async (req, res) => {
   }
 
   // Check if user is on a faction
-  const targetUserFaction = await TourneyService.getUserFaction(target_user);
+  const targetUserFaction = await TourneyService.getUserFaction(targetUser);
   Logger.info(JSON.stringify(targetUserFaction));
   if (!targetUserFaction.success) {
-    return ResponseHandler.error(res, `@${target_user} is not registered for the event.`, 403);
+    return ResponseHandler.error(res, `@${targetUser} is not registered for the event.`, 403);
   }
 
   // Check if user is stealing from their own faction
   const userFaction = await TourneyService.getUserFaction(twitch_display_name);
   
   if (userFaction.team_number === targetUserFaction.team_number) {
-    const message = TourneyService.getRandomMessage('STEAL_TEAMMATE_MESSAGES', twitch_display_name, target_user);
+    const message = TourneyService.getRandomMessage('STEAL_TEAMMATE_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.error(res, message, 403);
   }
 
   // Check if user is holding the diamond
-  if (TourneyService.getDiamondHolder().displayName !== target_user) {
+  if (TourneyService.getDiamondHolder().displayName !== targetUser) {
 
     // Award false accusation points to target
-    TourneyService.awardPoints(target_user, 1, 'False Accusation Bonus');
+    TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus');
     
-    const message = TourneyService.getRandomMessage('STEAL_INVALID_MESSAGES', twitch_display_name, target_user);
+    const message = TourneyService.getRandomMessage('STEAL_INVALID_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.error(res, message, 403);
   }
 
   // All checks passed, attempt steal, roll dice
   const { drop, success } = TourneyService.stealRates;
   const roll = Math.random() * 100;
-  Logger.info(`Steal attempt by @${twitch_display_name} on @${target_user}. Roll: ${roll.toFixed(2)} (Drop: ${drop}%, Success: ${success}%)`);
+  Logger.info(`Steal attempt by @${twitch_display_name} on @${targetUser}. Roll: ${roll.toFixed(2)} (Drop: ${drop}%, Success: ${success}%)`);
 
   if (roll <= drop) {
     // 5% fumble - current holder drops the diamond
@@ -166,11 +171,11 @@ router.post('/steal', asyncHandler(async (req, res) => {
     // Award points
     TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Steal');
 
-    const message = TourneyService.getRandomMessage('STEAL_SUCCESS_MESSAGES', twitch_display_name, target_user);
+    const message = TourneyService.getRandomMessage('STEAL_SUCCESS_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.success(res, { outcome: 'success', message }, message);
   } else {
     // 45% failure - steal fails
-    const message = TourneyService.getRandomMessage('STEAL_FAIL_MESSAGES', twitch_display_name, target_user);
+    const message = TourneyService.getRandomMessage('STEAL_FAIL_MESSAGES', twitch_display_name, targetUser);
     //return ResponseHandler.success(res, { outcome: 'fail', message }, message);
     return ResponseHandler.error(res, message, 403);
   }
@@ -180,6 +185,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
 // POST /tourney/pass
 router.post('/pass', asyncHandler(async (req, res) => {
   const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, target_user } = req.body;
+  const targetUser = stripAt(target_user);
 
   // Check if game is active and/or if the diamond is currently held by someone
   if( !TourneyService.isActive || !TourneyService.getDiamondHolder() ) {
@@ -193,8 +199,9 @@ router.post('/pass', asyncHandler(async (req, res) => {
     return ResponseHandler.error(res, message, 403);
   }
 
+  
   // Check if target user exists
-  const targetUserFaction = await TourneyService.getUserFaction(target_user);
+  const targetUserFaction = await TourneyService.getUserFaction(targetUser);
   Logger.info(JSON.stringify(targetUserFaction));
   if (!targetUserFaction.success) {
     const message = TourneyService.getRandomMessage('PASS_INVALID_TARGET_MESSAGES', twitch_display_name);
@@ -202,7 +209,7 @@ router.post('/pass', asyncHandler(async (req, res) => {
   }
 
   // Check if user is passing to theirself
-  if (TourneyService.getDiamondHolder().displayName === target_user) {
+  if (TourneyService.getDiamondHolder().displayName === targetUser) {
     const message = TourneyService.getRandomMessage('PASS_SELF_MESSAGES', twitch_display_name);
     return ResponseHandler.error(res, message, 403);
   }
@@ -210,13 +217,13 @@ router.post('/pass', asyncHandler(async (req, res) => {
   // Check if user is passing to someone on the other team
   const userFaction = await TourneyService.getUserFaction(twitch_display_name);
   if (userFaction.team_number !== targetUserFaction.team_number) {
-    const message = TourneyService.getRandomMessage('PASS_WRONG_FACTION_MESSAGES', twitch_display_name, target_user);
+    const message = TourneyService.getRandomMessage('PASS_WRONG_FACTION_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.error(res, message, 403);
   }
 
   // All checks passed, perform pass
   // Get new user data
-  const newHolder = await UserService.getUserByDisplayName(target_user);
+  const newHolder = await UserService.getUserByDisplayName(targetUser);
 
   TourneyService.diamondHolder = {
     twitchId: newHolder.twitch_id,
@@ -229,7 +236,7 @@ router.post('/pass', asyncHandler(async (req, res) => {
   // Award points
   TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Pass');
 
-  const message = TourneyService.getRandomMessage('PASS_SUCCESS_MESSAGES', twitch_display_name, target_user, userFaction.team_name);
+  const message = TourneyService.getRandomMessage('PASS_SUCCESS_MESSAGES', twitch_display_name, targetUser, userFaction.team_name);
   return ResponseHandler.success(res, message, message);
 
 }));
