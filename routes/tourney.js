@@ -3,6 +3,7 @@ const router = express.Router();
 const { ResponseHandler, asyncHandler } = require('../utils/ResponseHandler');
 const UserService = require('../services/UserService');
 const TourneyService = require('../services/TourneyService');
+const WebSocketService = require('./WebSocketService');
 const Logger = require('../utils/Logger');
 
 // Basic helpers
@@ -266,6 +267,8 @@ router.post('/end-round', asyncHandler(async (req, res) => {
 
   // Reset for next round
   TourneyService.initDiamondHeist();
+  // Broadcast update
+  WebSocketService.broadcast({ type: 'HEIST_END_ROUND' });
 
   const message = TourneyService.getRandomMessage('ROUND_END_MESSAGES', currentHolder.displayName, currentHolder.faction);
   return ResponseHandler.success(res, currentHolder, message);
