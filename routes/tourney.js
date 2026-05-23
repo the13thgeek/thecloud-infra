@@ -268,7 +268,7 @@ router.post('/end-round', asyncHandler(async (req, res) => {
   TourneyService.initDiamondHeist();
 
   const message = TourneyService.getRandomMessage('ROUND_END_MESSAGES', currentHolder.displayName, currentHolder.faction);
-  return ResponseHandler.success(res, message, message);
+  return ResponseHandler.success(res, currentHolder, message);
 }));
 
 module.exports = router;
