@@ -95,7 +95,6 @@ router.post('/grab', asyncHandler(async (req, res) => {
 
 }));
 
-
 // POST /tourney/steal
 router.post('/steal', asyncHandler(async (req, res) => {
   const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, target_user } = req.body;
@@ -233,6 +232,12 @@ router.post('/pass', asyncHandler(async (req, res) => {
   const message = TourneyService.getRandomMessage('PASS_SUCCESS_MESSAGES', twitch_display_name, target_user, userFaction.team_name);
   return ResponseHandler.success(res, message, message);
 
+}));
+
+// POST /tourney/scores
+router.post('/scores', asyncHandler(async (req, res) => {
+  const scoreList = await TourneyService.getScoreboard();
+  return ResponseHandler.success(res, scoreList, 'Current Scores');
 }));
 
 module.exports = router;
