@@ -262,10 +262,12 @@ class TourneyService {
     if(!this.diamondHolder) {
       //const template = this.INITIAL_DROP_MESSAGES[Math.floor(Math.random() * this.INITIAL_DROP_MESSAGES.length)];logger.info(message);
       message = this.getRandomMessage('INITIAL_DROP_MESSAGES');
+      WebSocketService.broadcast({ type: 'HEIST_START', message });
       logger.info(message);
     } else {
       //const template = this.DROP_MESSAGES[Math.floor(Math.random() * this.DROP_MESSAGES.length)];
       message = this.getRandomMessage('DROP_MESSAGES', this.diamondHolder.displayName);
+      WebSocketService.broadcast({ type: 'HEIST_DROP', message });
       logger.info(message);
       this.lastHolder = this.diamondHolder;
       this.diamondHolder = null;
