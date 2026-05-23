@@ -3,7 +3,7 @@ const router = express.Router();
 const { ResponseHandler, asyncHandler } = require('../utils/ResponseHandler');
 const UserService = require('../services/UserService');
 const TourneyService = require('../services/TourneyService');
-const WebSocketService = require('./WebSocketService');
+const WebSocketService = require('../services/WebSocketService');
 const Logger = require('../utils/Logger');
 
 // Basic helpers
