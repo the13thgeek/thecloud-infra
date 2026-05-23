@@ -198,8 +198,7 @@ router.post('/pass', asyncHandler(async (req, res) => {
     const message = TourneyService.getRandomMessage('PASS_NOT_HOLDER_MESSAGES', twitch_display_name);
     return ResponseHandler.error(res, message, 403);
   }
-
-  
+ 
   // Check if target user exists
   const targetUserFaction = await TourneyService.getUserFaction(targetUser);
   Logger.info(JSON.stringify(targetUserFaction));
@@ -245,6 +244,31 @@ router.post('/pass', asyncHandler(async (req, res) => {
 router.post('/scores', asyncHandler(async (req, res) => {
   const scoreList = await TourneyService.getScoreboard();
   return ResponseHandler.success(res, scoreList, 'Current Scores');
+}));
+
+// POST /tourney/status
+router.post('/status', asyncHandler(async (req, res) => {
+  return ResponseHandler.success(res, TourneyService.getDiamondHolder(), 'Current Status');
+}));
+
+// POST /tourney/end-round
+router.post('/end-round', asyncHandler(async (req, res) => {
+  // retrieve current holder before resetting for message
+  const currentHolder = TourneyService.getDiamondHolder();
+
+  if (currentHolder) {
+    // Award points to current holder for end of round
+    TourneyService.awardPoints(currentHolder.displayName, 5, 'End of Round Bonus');
+  } else {
+    Logger.info('Round ended with no diamond holder');
+    return ResponseHandler.error(res, 'Round ended with no diamond holder.', 403);
+  }
+
+  // Reset for next round
+  TourneyService.initDiamondHeist();
+
+  const message = TourneyService.getRandomMessage('ROUND_END_MESSAGES', currentHolder.displayName, currentHolder.faction);
+  return ResponseHandler.success(res, message, message);
 }));
 
 module.exports = router;
