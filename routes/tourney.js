@@ -8,7 +8,7 @@ const Logger = require('../utils/Logger');
 
 // Basic helpers
 // Remove @ from username if present and trim whitespace
-const stripAt = (username) => username?.replace(/^@/, '').trim();
+const cleanUsername = (username) => username?.replace(/^@/, '').trim().toLowerCase();
 
 // POST /tourney/register
 router.post('/register', asyncHandler(async (req, res) => {
@@ -89,7 +89,8 @@ router.post('/grab', asyncHandler(async (req, res) => {
   }
 
   // Award points
-  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Grab');
+  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Grab', false);
+  WebSocketService.broadcast({ type: 'HEIST_GRAB' });
 
   const message = TourneyService.getRandomMessage('GRAB_MESSAGES', twitch_display_name, userFaction.team_name);
   return ResponseHandler.success(res, {
@@ -104,7 +105,10 @@ router.post('/grab', asyncHandler(async (req, res) => {
 router.post('/steal', asyncHandler(async (req, res) => {
   const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, target_user } = req.body;
   //const attemptMessage = TourneyService.getRandomMessage('STEAL_ATTEMPT_MESSAGES', twitch_display_name, target_user);
-  const targetUser = stripAt(target_user);
+  const targetUser = cleanUsername(target_user);
+  const currentHolder = TourneyService.getDiamondHolder();
+
+  Logger.debug(`Steal attempt by @${twitch_display_name} targeting @${targetUser}`);
 
   // Check if target user is specified  
   if (!targetUser) {
@@ -118,8 +122,9 @@ router.post('/steal', asyncHandler(async (req, res) => {
     return ResponseHandler.error(res, message, 403);
   }
 
-  // Check is user is trying to steal from self
-  if (TourneyService.getDiamondHolder().displayName === twitch_display_name) {
+  // Check is user is trying to steal from self  
+  if (currentHolder.displayName === targetUser) {
+    Logger.debug(`currentHolder: ${currentHolder.displayName}, targetUser: ${targetUser}`);
     const message = TourneyService.getRandomMessage('STEAL_SELF_MESSAGES', twitch_display_name);
     return ResponseHandler.error(res, message, 403);
   }
@@ -140,10 +145,11 @@ router.post('/steal', asyncHandler(async (req, res) => {
   }
 
   // Check if user is holding the diamond
-  if (TourneyService.getDiamondHolder().displayName !== targetUser) {
+  if (currentHolder.displayName !== targetUser) {
 
     // Award false accusation points to target
-    TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus');
+    TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus', false);
+    WebSocketService.broadcast({ type: 'HEIST_STEAL_FALSE' });
     
     const message = TourneyService.getRandomMessage('STEAL_INVALID_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.error(res, message, 403);
@@ -170,7 +176,8 @@ router.post('/steal', asyncHandler(async (req, res) => {
     };   
 
     // Award points
-    TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Steal');
+    TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Steal', false);
+    WebSocketService.broadcast({ type: 'HEIST_STEAL_SUCCESS' });
 
     const message = TourneyService.getRandomMessage('STEAL_SUCCESS_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.success(res, { outcome: 'success', message }, message);
@@ -186,7 +193,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
 // POST /tourney/pass
 router.post('/pass', asyncHandler(async (req, res) => {
   const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, target_user } = req.body;
-  const targetUser = stripAt(target_user);
+  const targetUser = cleanUsername(target_user);
 
   // Check if game is active and/or if the diamond is currently held by someone
   if( !TourneyService.isActive || !TourneyService.getDiamondHolder() ) {
@@ -195,7 +202,8 @@ router.post('/pass', asyncHandler(async (req, res) => {
   }
 
   // Check if user actually has the diamond
-  if (TourneyService.getDiamondHolder().twitchId !== twitch_id) {
+  const currentHolder = TourneyService.getDiamondHolder();
+  if (currentHolder.twitchId !== twitch_id) {
     const message = TourneyService.getRandomMessage('PASS_NOT_HOLDER_MESSAGES', twitch_display_name);
     return ResponseHandler.error(res, message, 403);
   }
@@ -234,7 +242,8 @@ router.post('/pass', asyncHandler(async (req, res) => {
   }
 
   // Award points
-  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Pass');
+  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Pass', false);
+  WebSocketService.broadcast({ type: 'HEIST_PASS' });
 
   const message = TourneyService.getRandomMessage('PASS_SUCCESS_MESSAGES', twitch_display_name, targetUser, userFaction.team_name);
   return ResponseHandler.success(res, message, message);
@@ -259,7 +268,7 @@ router.post('/end-round', asyncHandler(async (req, res) => {
 
   if (currentHolder) {
     // Award points to current holder for end of round
-    TourneyService.awardPoints(currentHolder.displayName, 5, 'End of Round Bonus');
+    TourneyService.awardPoints(currentHolder.displayName, 5, 'End of Round Bonus', false);
   } else {
     Logger.info('Round ended with no diamond holder');
     return ResponseHandler.error(res, 'Round ended with no diamond holder.', 403);
