@@ -165,10 +165,8 @@ class TourneyService {
     await this.logScore(userName, points, details, true);
 
     // Broadcast update
-    if (isBroadcast) {
-      WebSocketService.broadcast({ type: broadcastName });
-      logger.info(`WebSocket broadcast: ${broadcastName}`);
-    }
+    WebSocketService.broadcast({ type: broadcastName });
+    logger.info(`WebSocket broadcast: ${broadcastName}`);
 
     logger.info(`Awarded ${points} points to team ${faction.team_name} for user ${userName} (${details})`);
 
