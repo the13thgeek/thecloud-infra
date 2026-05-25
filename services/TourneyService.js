@@ -167,7 +167,7 @@ class TourneyService {
     // Broadcast update
     if (isBroadcast) {
       WebSocketService.broadcast({ type: broadcastName });
-      logger.debug(`WebSocket broadcast: ${broadcastName}`);
+      logger.info(`WebSocket broadcast: ${broadcastName}`);
     }
 
     logger.info(`Awarded ${points} points to team ${faction.team_name} for user ${userName} (${details})`);
