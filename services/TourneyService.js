@@ -145,7 +145,7 @@ class TourneyService {
   /**
    * Award points to user's team
    */
-  async awardPoints(userName, points, details = '', isBroadcast = true) {
+  async awardPoints(userName, points, details = '', broadcastName = 'SCORE_UPDATE') {
     const faction = await this.getUserFaction(userName);
 
     if (!faction.success) {
@@ -166,7 +166,7 @@ class TourneyService {
 
     // Broadcast update
     if (isBroadcast) {
-      WebSocketService.broadcast({ type: 'SCORE_UPDATE' });
+      WebSocketService.broadcast({ type: broadcastName });
     }
 
     logger.info(`Awarded ${points} points to team ${faction.team_name} for user ${userName} (${details})`);

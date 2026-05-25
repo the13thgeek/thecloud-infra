@@ -3,7 +3,6 @@ const router = express.Router();
 const { ResponseHandler, asyncHandler } = require('../utils/ResponseHandler');
 const UserService = require('../services/UserService');
 const TourneyService = require('../services/TourneyService');
-const WebSocketService = require('../services/WebSocketService');
 const Logger = require('../utils/Logger');
 
 // Basic helpers
@@ -89,8 +88,7 @@ router.post('/grab', asyncHandler(async (req, res) => {
   }
 
   // Award points
-  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Grab', false);
-  WebSocketService.broadcast({ type: 'HEIST_GRAB' });
+  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Grab', 'HEIST_GRAB');
 
   const message = TourneyService.getRandomMessage('GRAB_MESSAGES', twitch_display_name, userFaction.team_name);
   return ResponseHandler.success(res, {
@@ -148,8 +146,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
   if (currentHolder.displayName !== targetUser) {
 
     // Award false accusation points to target
-    TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus', false);
-    WebSocketService.broadcast({ type: 'HEIST_STEAL_FALSE' });
+    TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus', 'HEIST_STEAL_FALSE');
     
     const message = TourneyService.getRandomMessage('STEAL_INVALID_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.error(res, message, 403);
@@ -176,8 +173,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
     };   
 
     // Award points
-    TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Steal', false);
-    WebSocketService.broadcast({ type: 'HEIST_STEAL_SUCCESS' });
+    TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Steal', 'HEIST_STEAL_SUCCESS');
 
     const message = TourneyService.getRandomMessage('STEAL_SUCCESS_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.success(res, { outcome: 'success', message }, message);
@@ -242,8 +238,7 @@ router.post('/pass', asyncHandler(async (req, res) => {
   }
 
   // Award points
-  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Pass', false);
-  WebSocketService.broadcast({ type: 'HEIST_PASS' });
+  TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Pass', 'HEIST_PASS');
 
   const message = TourneyService.getRandomMessage('PASS_SUCCESS_MESSAGES', twitch_display_name, targetUser, userFaction.team_name);
   return ResponseHandler.success(res, message, message);
@@ -268,7 +263,7 @@ router.post('/end-round', asyncHandler(async (req, res) => {
 
   if (currentHolder) {
     // Award points to current holder for end of round
-    TourneyService.awardPoints(currentHolder.displayName, 5, 'End of Round Bonus', false);
+    TourneyService.awardPoints(currentHolder.displayName, 5, 'End of Round Bonus', 'HEIST_END_ROUND');
   } else {
     Logger.info('Round ended with no diamond holder');
     return ResponseHandler.error(res, 'Round ended with no diamond holder.', 403);
@@ -276,8 +271,6 @@ router.post('/end-round', asyncHandler(async (req, res) => {
 
   // Reset for next round
   TourneyService.initDiamondHeist();
-  // Broadcast update
-  WebSocketService.broadcast({ type: 'HEIST_END_ROUND' });
 
   const message = TourneyService.getRandomMessage('ROUND_END_MESSAGES', currentHolder.displayName, currentHolder.faction);
   return ResponseHandler.success(res, currentHolder, message);
