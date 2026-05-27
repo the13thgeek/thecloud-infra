@@ -6,9 +6,9 @@ module.exports = {
   ],
 
   INITIAL_DROP_MESSAGES : [
-    () => `The Black Diamond has been dropped! Who will claim it?`,
-    () => `The Black Diamond is loose! Grab it if you can!`,
-    () => `The Black Diamond has hit the floor! Who will be the first to claim it?`
+    () => `💎 The Black Diamond has been dropped! Who will claim it?`,
+    () => `💎 The Black Diamond is loose! Grab it if you can!`,
+    () => `💎 The Black Diamond has hit the floor! Who will be the first to claim it?`
   ],
 
   REGISTER_MESSAGES : [
@@ -25,17 +25,18 @@ module.exports = {
   ],
 
   DROP_MESSAGES : [
-    (username) => `The Black Diamond slips from @${username}'s grasp and clatters to the ground!`,
-    (username) => `Oh no! @${username} fumbled the Black Diamond and it fell to the floor!`,
-    (username) => `The Black Diamond has been dropped by @${username}! It hits the ground with a thud!`,
-    (username) => `Yikes! @${username} lost hold of the Black Diamond and it crashes down!`
+    (username) => `⚠️ The Black Diamond slips from @${username}'s grasp and clatters to the ground!`,
+    (username) => `⚠️ Oh no! @${username} fumbled the Black Diamond and it fell to the floor!`,
+    (username) => `⚠️ The Black Diamond has been dropped by @${username}! It hits the ground with a thud!`,
+    (username) => `⚠️ Yikes! @${username} lost hold of the Black Diamond and it crashes down!`
   ],
 
   GRAB_MESSAGES : [
-    (username, factionName) => `@${username} has claimed the Black Diamond for the ${factionName}!`,
-    (username, factionName) => `The Black Diamond is now in the possession of @${username} from the ${factionName}!`,
-    (username, factionName) => `A new Diamond Holder emerges! @${username} of the ${factionName} has claimed the prize!`,
-    (username, factionName) => `The Black Diamond has found a new home with @${username} representing the ${factionName}!`
+    (username, factionName) => `💎 @${username} moves fast through the gallery and snatches the Black Diamond off the floor! ${factionName} is now on the grid. The clock starts!`,
+    (username, factionName) => `💎 The Black Diamond doesn't stay on the floor for long. @${username} gets there first. ${factionName} has 15 minutes before the trace locks in!`,
+    (username, factionName) => `💎 @${username} cuts through the chaos and picks up the Black Diamond. ${factionName} is holding. The biometric clock is running!`,
+    (username, factionName) => `💎 @${username} of ${factionName} reaches the diamond first. Off the floor and into their hands! The security system takes notice.`,
+    (username, factionName) => `💎 The scramble ends. @${username} has the Black Diamond. ${factionName} just painted a target on themselves. 15 minutes on the clock!`
   ],
 
   ALREADY_HOLDING_MESSAGES: [
@@ -78,11 +79,11 @@ module.exports = {
   ],
 
   STEAL_SUCCESS_MESSAGES : [
-    (username1, username2) => `@${username1} moves fast — too fast for @${username2}. The Black Diamond changes hands!`,
-    (username1, username2) => `Clean lift! @${username2} didn't see @${username1} coming until it was already gone.`,
-    (username1, username2) => `@${username1} plays it cool, waits for the moment, and takes it. @${username2} is left empty handed!`,
-    (username1, username2) => `@${username2} blinked. That's all it took! @${username1} walks away with the Black Diamond.`,
-    (username1, username2) => `Textbook. @${username1} gets in, snatches the Black Diamond, gets out! @${username2} never stood a chance.`
+    (username1, username2) => `💎 @${username1} lifts the Black Diamond off @${username2} without a sound. The biometric trace shifts! @${username2} is clean. @${username1} is not.`,
+    (username1, username2) => `💎 Clean lift! @${username2} didn't feel a thing. The security system is now tracking @${username1}.`,
+    (username1, username2) => `💎 @${username1} makes the swap mid-gallery. @${username2} is off the grid. The clock resets — and starts again for @${username1}.`,
+    (username1, username2) => `💎 The Black Diamond changes hands. @${username2} walks away empty-handed. @${username1} just bought themselves 15 minutes!`,
+    (username1, username2) => `💎 Textbook! @${username1} is in, takes the diamond from @${username2}, and disappears back into the crowd. The trace follows.`
   ],
 
   STEAL_SELF_MESSAGES : [
@@ -94,27 +95,27 @@ module.exports = {
   ],
 
   STEAL_FAIL_MESSAGES : [
-    (username1, username2) => `@${username1} makes a move on @${username2} — but @${username2} sees it coming. The Black Diamond doesn't move!`,
-    (username1, username2) => `@${username1} gets close. Not close enough! @${username2} tightens their grip.`,
-    (username1, username2) => `Bold move from @${username1}. @${username2} doesn't even flinch. Better luck next time!`,
-    (username1, username2) => `@${username1} thought they had it. @${username2} had other plans!`,
-    (username1, username2) => `The approach was sloppy. @${username2} clocks @${username1} before they get within reach. The Black Diamond stays put!`
+    (username1, username2) => `❌ @${username1} gets within reach — then @${username2} shifts. The moment is gone. The diamond doesn't move.`,
+    (username1, username2) => `❌ @${username2} feels the approach. Adjusts. @${username1} pulls back before the sensors flag the contact. The diamond stays put.`,
+    (username1, username2) => `❌ Too slow. @${username2} clocked @${username1} three steps out. The Black Diamond isn't going anywhere.`,
+    (username1, username2) => `❌ @${username1} had the angle. Didn't have the timing. @${username2} holds on. The clock keeps running.`,
+    (username1, username2) => `❌ The approach was good. The execution wasn't. @${username2} tightens their grip and @${username1} walks away empty handed.`
   ],
 
   STEAL_DROP_MESSAGES : [
-    (username1, username2) => `@${username1} reaches for it — @${username2} pulls back hard. The Black Diamond slips from both of them and hits the floor!`,
-    (username1, username2) => `Too aggressive! @${username1} and @${username2} fumble the exchange. The Black Diamond is down. Somebody grab it!`,
-    (username1, username2) => `@${username1} makes the grab — @${username2} fights back... neither wins. The Black Diamond is on the floor!`,
-    (username1, username2) => `The struggle between @${username1} and @${username2} ends badly for everyone. The Black Diamond drops. It's anyone's game!`,
-    (username1, username2) => `@${username2} wasn't going down without a fight. Cost them both. The Black Diamond is loose!`
+    (username1, username2) => `⚠️ @${username1} grabs for it — @${username2} doesn't let go. The struggle lasts two seconds. The Black Diamond hits the marble floor! Security cameras catch everything.`,
+    (username1, username2) => `⚠️ Too aggressive. @${username1} and @${username2} both reach for it at the same time. Neither wins. The diamond is on the floor! The gallery is watching.`,
+    (username1, username2) => `⚠️ @${username2} fights back hard. @${username1} wasn't expecting that. The Black Diamond slips from both of them and skids across the gallery floor!`,
+    (username1, username2) => `⚠️ The struggle between @${username1} and @${username2} ends badly for everyone. The diamond drops. The biometric trace goes cold. It's anyone's game!`,
+    (username1, username2) => `⚠️ @${username2} wasn't going quietly. Cost them both. The Black Diamond is on the floor and the clock has reset. Move fast!`
   ],
 
   STEAL_INVALID_MESSAGES : [
-    (username1, username2) => `@${username1} tries to steal from @${username2}, but they don't even have the Black Diamond! Oops!`,
-    (username1, username2) => `@${username1} makes a move for @${username2}'s Black Diamond... but @${username2} isn't the holder! That's embarrassing.`,
-    (username1, username2) => `@${username1} tries to steal from @${username2}, but @${username2} isn't holding the Black Diamond. Wrong target!`,
-    (username1, username2) => `@${username1} goes for a steal — but @${username2} doesn't have the Black Diamond! Better check before you wreck, @${username1}.`,
-    (username1, username2) => `@${username1} attempts to steal from @${username2}, but they come up empty. @${username2} isn't the holder!`
+    (username1, username2) => `❌ @${username1} tries to steal from @${username2}, but they don't even have the Black Diamond! Oops!`,
+    (username1, username2) => `❌ @${username1} makes a move for @${username2}'s Black Diamond... but @${username2} isn't the holder! That's embarrassing.`,
+    (username1, username2) => `❌ @${username1} tries to steal from @${username2}, but @${username2} isn't holding the Black Diamond. Wrong target!`,
+    (username1, username2) => `❌ @${username1} goes for a steal — but @${username2} doesn't have the Black Diamond! Better check before you wreck, @${username1}.`,
+    (username1, username2) => `❌ @${username1} attempts to steal from @${username2}, but they come up empty. @${username2} isn't the holder!`
   ],
 
   STEAL_INVALID_TARGET_MESSAGES : [
@@ -126,13 +127,13 @@ module.exports = {
   ],
 
   STEAL_TEAMMATE_MESSAGES : [
-    (username1, username2) => `@${username1} tries to steal from their own teammate @${username2}. That's not how this works, @${username1}!`,
-    (username1, username2) => `@${username1} reaches for the Black Diamond... but it's with their own teammate @${username2}. Awkward!`,
-    (username1, username2) => `@${username1} moves on @${username2} — then notices the badge. Same crew. This stays between them... and now, also chat.`,
-    (username1, username2) => `@${username1} gets halfway there before realising @${username2} is on their side. Awkward. Nobody saw that!`,
-    (username1, username2) => `@${username1} and @${username2} are on the same team. Use !pass. This isn't that kind of heist.`,
-    (username1, username2) => `@${username1} almost robbed their own teammate. @${username2} is not impressed. The group leader facepalms.`,
-    (username1, username2) => `That's friendly fire, @${username1}. @${username2} is with you. Save it for the others!`
+    (username1, username2) => `⚠️ @${username1} tries to steal from their own teammate @${username2}. That's not how this works, @${username1}!`,
+    (username1, username2) => `⚠️ @${username1} reaches for the Black Diamond... but it's with their own teammate @${username2}. Awkward!`,
+    (username1, username2) => `⚠️ @${username1} moves on @${username2} — then notices the badge. Same crew. This stays between them... and now, also chat.`,
+    (username1, username2) => `⚠️ @${username1} gets halfway there before realising @${username2} is on their side. Awkward. Nobody saw that!`,
+    (username1, username2) => `⚠️ @${username1} and @${username2} are on the same team. Use !pass. This isn't that kind of heist.`,
+    (username1, username2) => `⚠️ @${username1} almost robbed their own teammate. @${username2} is not impressed. The group leader facepalms.`,
+    (username1, username2) => `⚠️ That's friendly fire, @${username1}. @${username2} is with you. Save it for the others!`
   ],
 
   NOTHING_TO_STEAL_MESSAGES : [
@@ -144,27 +145,27 @@ module.exports = {
   ],
 
   PASS_SUCCESS_MESSAGES: [
-    (username1, username2, factionName) => `@${username1} makes the handoff. @${username2} takes possession. ${factionName} keeps the Black Diamond in play!`,
-    (username1, username2, factionName) => `Clean transfer! @${username1} to @${username2}. ${factionName} stays in control.`,
-    (username1, username2, factionName) => `@${username1} trusts @${username2} with the Black Diamond. ${factionName} moves it quietly!`,
-    (username1, username2, factionName) => `The Black Diamond changes hands within ${factionName}. @${username1} passes to @${username2}. Smart play!`,
-    (username1, username2, factionName) => `@${username1} gets it to @${username2} without a sound. ${factionName} keeps their grip on the job!`
+    (username1, username2, factionName) => `💎 @${username1} makes the handoff. @${username2} takes possession. ${factionName} keeps the Black Diamond in play!`,
+    (username1, username2, factionName) => `💎 Smooth transfer! @${username1} to @${username2}. ${factionName} stays in control.`,
+    (username1, username2, factionName) => `💎 @${username1} trusts @${username2} with the Black Diamond. ${factionName} moves it quietly!`,
+    (username1, username2, factionName) => `💎 The Black Diamond changes hands within ${factionName}. @${username1} passes to @${username2}. Smart play!`,
+    (username1, username2, factionName) => `💎 @${username1} gets it to @${username2} without a sound. ${factionName} keeps their grip on the job!`
   ],
 
   PASS_NOT_HOLDER_MESSAGES: [
-    (username) => `@${username} tries to pass the Black Diamond. They don't have the Black Diamond. Whoops!`,
-    (username) => `@${username} reaches into their pocket. Finds nothing. The Black Diamond is not yours to pass!`,
-    (username) => `Bold of @${username} to pass something they're not holding. The crew is concerned...`,
-    (username) => `@${username} you don't have it. You never had it. Please sit down.`,
-    (username) => `The Black Diamond is not in @${username}'s possession. This is not up for debate.`
+    (username) => `❌ @${username} tries to pass the Black Diamond. They don't have the Black Diamond. Whoops!`,
+    (username) => `❌ @${username} reaches into their pocket. Finds nothing. The Black Diamond is not yours to pass!`,
+    (username) => `❌ Bold of @${username} to pass something they're not holding. The crew is concerned...`,
+    (username) => `❌ @${username} you don't have it. You never had it. Please sit down.`,
+    (username) => `❌ The Black Diamond is not in @${username}'s possession. This is not up for debate.`
   ],
 
   PASS_WRONG_FACTION_MESSAGES: [
-    (username1, username2) => `@${username1} just tried to hand the Black Diamond to the enemy. @${username2} is not on your crew. Did you even read the briefing?`,
-    (username1, username2) => `@${username1}. @${username2} is not your teammate. The diamond stays where it is. Please pay attention.`,
-    (username1, username2) => `Bold strategy from @${username1} — handing the Black Diamond directly to the opposition. Truly remarkable. The diamond stays put.`,
-    (username1, username2) => `@${username1} attempts to pass to @${username2}. A rival. In front of everyone. The crew is having a meeting after this.`,
-    (username1, username2) => `@${username1} that was either a mistake or a betrayal. Either way, @${username2} isn't getting the diamond. Check your roster.`
+    (username1, username2) => `❌ @${username1} just tried to hand the Black Diamond to the enemy. @${username2} is not on your crew. Did you even read the briefing?`,
+    (username1, username2) => `❌ @${username1}. @${username2} is not your teammate. The diamond stays where it is. Please pay attention.`,
+    (username1, username2) => `❌ Bold strategy from @${username1} — handing the Black Diamond directly to the opposition. Truly remarkable. The diamond stays put.`,
+    (username1, username2) => `❌ @${username1} attempts to pass to @${username2}. A rival. In front of everyone. The crew is having a meeting after this.`,
+    (username1, username2) => `❌ @${username1} that was either a mistake or a betrayal. Either way, @${username2} isn't getting the diamond. Check your roster.`
   ],
 
   PASS_SELF_MESSAGES: [
@@ -183,11 +184,11 @@ module.exports = {
   ],
 
   ROUND_END_MESSAGES: [
-    (username, factionName) => `That's a wrap! @${username} of ${factionName} holds the Black Diamond as the dust settles. +5 points. Well played.`,
-    (username, factionName) => `The round is over. @${username} kept their grip to the end. ${factionName} walks away with the bonus. +5 points.`,
-    (username, factionName) => `@${username} outlasted everyone. ${factionName} takes the round. The Black Diamond and +5 points are theirs.`,
-    (username, factionName) => `When the smoke cleared, @${username} was still holding. ${factionName} claims the round bonus. +5 points.`,
-    (username, factionName) => `The Black Diamond stays with @${username} as the round closes. ${factionName} earns the +5. Don't spend it all in one place.`
+    (username, factionName) => `💎 That's a wrap! @${username} of ${factionName} holds the Black Diamond as the dust settles. +5 points. Well played.`,
+    (username, factionName) => `💎 The round is over. @${username} kept their grip to the end. ${factionName} walks away with the bonus. +5 points.`,
+    (username, factionName) => `💎 @${username} outlasted everyone. ${factionName} takes the round. The Black Diamond and +5 points are theirs.`,
+    (username, factionName) => `💎 When the smoke cleared, @${username} was still holding. ${factionName} claims the round bonus. +5 points.`,
+    (username, factionName) => `💎 The Black Diamond stays with @${username} as the round closes. ${factionName} earns the +5. Don't spend it all in one place.`
   ],
 
   DIAMOND_DROP_MESSAGE: [

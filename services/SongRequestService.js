@@ -141,7 +141,20 @@ class SongRequestService {
     }
 
     // Find the song
-    const song = this.findSong(songTitle);
+    let song = null;
+
+    // Arsnova Easter Egg
+    // !req arsnova or !req arusunova
+    if( songTitle.trim().toLowerCase() === 'arsnova' || songTitle.trim().toLowerCase() === 'arusunova' ) {
+      song = this.findSong("Afronova");
+    } else if ( songTitle.trim().toLowerCase() === 'bridgemt' ) {
+      // BridgeMT easter egg
+      song = this.findSong("Love Shine");
+    } else {
+      // otherwise, perform regular search
+      song = this.findSong(songTitle);
+    }
+
     if (!song) {
       return {
         success: false,

@@ -105,6 +105,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
   //const attemptMessage = TourneyService.getRandomMessage('STEAL_ATTEMPT_MESSAGES', twitch_display_name, target_user);
   const targetUser = cleanUsername(target_user);
   const currentHolder = TourneyService.getDiamondHolder();
+  Logger.debug(`currentHolder: ${currentHolder.displayName}, targetUser: ${targetUser}`);
 
   Logger.debug(`Steal attempt by @${twitch_display_name} targeting @${targetUser}`);
 
@@ -121,8 +122,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
   }
 
   // Check is user is trying to steal from self  
-  if (twitch_display_name === targetUser) {
-    Logger.debug(`currentHolder: ${currentHolder.displayName}, targetUser: ${targetUser}`);
+  if (twitch_display_name === targetUser && twitch_display_name === currentHolder.displayName) {   
     const message = TourneyService.getRandomMessage('STEAL_SELF_MESSAGES', twitch_display_name);
     return ResponseHandler.error(res, message, 403);
   }
@@ -144,7 +144,6 @@ router.post('/steal', asyncHandler(async (req, res) => {
 
   // Check if user is holding the diamond
   if (currentHolder.displayName !== targetUser) {
-
     // Award false accusation points to target
     TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus', 'HEIST_STEAL_FALSE');
     
