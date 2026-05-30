@@ -77,6 +77,9 @@ router.post('/grab', asyncHandler(async (req, res) => {
   if (!userFaction.success) {
     return ResponseHandler.error(res, `@${twitch_display_name}, you need to be on a faction to grab the Black Diamond! Join a faction by typing !tourney in chat.`, 403);
   }
+  
+  // Reset passer data
+  TourneyService.lastPasser = null;
 
   // All checks passed, attempt to grab the diamond
   TourneyService.diamondHolder = {
@@ -173,6 +176,8 @@ router.post('/steal', asyncHandler(async (req, res) => {
 
     // Award points
     TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Steal', 'HEIST_STEAL_SUCCESS');
+    // Reset passer data
+    TourneyService.lastPasser = null;
 
     const message = TourneyService.getRandomMessage('STEAL_SUCCESS_MESSAGES', twitch_display_name, targetUser);
     return ResponseHandler.success(res, { outcome: 'success', message }, message);
@@ -224,9 +229,18 @@ router.post('/pass', asyncHandler(async (req, res) => {
     return ResponseHandler.error(res, message, 403);
   }
 
+  // Check if the user isn't passing it back to the person who passed it to them
+  if( TourneyService.lastPasser === targetUser ) {
+    const message = TourneyService.getRandomMessage('PASS_BACK_MESSAGES', twitch_display_name, targetUser);
+    return ResponseHandler.error(res, message, 403);
+  }
+
   // All checks passed, perform pass
   // Get new user data
   const newHolder = await UserService.getUserByDisplayName(targetUser);
+
+  // Record who passed it
+  TourneyService.lastPasser = twitch_display_name;
 
   TourneyService.diamondHolder = {
     twitchId: newHolder.twitch_id,
@@ -235,6 +249,7 @@ router.post('/pass', asyncHandler(async (req, res) => {
     faction: targetUserFaction.team_name,
     factionId: targetUserFaction.team_number
   }
+  
 
   // Award points
   TourneyService.awardPoints(twitch_display_name, 1, 'Diamond Pass', 'HEIST_PASS');
@@ -252,7 +267,12 @@ router.post('/scores', asyncHandler(async (req, res) => {
 
 // POST /tourney/status
 router.post('/status', asyncHandler(async (req, res) => {
-  return ResponseHandler.success(res, TourneyService.getDiamondHolder(), 'Current Status');
+  const data = {
+    diamondHolder: TourneyService.getDiamondHolder(),
+    lastHolder: TourneyService.lastHolder,
+    lastPasser: TourneyService.lastPasser
+  }
+  return ResponseHandler.success(res, data, 'Current Status');
 }));
 
 // POST /tourney/end-round

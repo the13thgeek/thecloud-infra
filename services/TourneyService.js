@@ -16,6 +16,7 @@ class TourneyService {
     this.diamondHolder = null; // Track current Diamond Holder
     this.lastHolder = null; // Track last Diamond Holder for cooldown checks
     this.isActive = false; // Track if the event is active
+    this.lastPasser = null; // Track who passed it last
 
     // Rolls
     this.stealRates = {
@@ -85,13 +86,13 @@ class TourneyService {
     };
   }
 
-  /**
-   * getRegisterMessage
-   */
-  getRegisterMessage(username, factionName) {
-    const template = this.REGISTER_MESSAGES[Math.floor(Math.random() * this.REGISTER_MESSAGES.length)];
-    return template(username, factionName);
-  }
+  // /**
+  //  * getRegisterMessage
+  //  */
+  // getRegisterMessage(username, factionName) {
+  //   const template = this.REGISTER_MESSAGES[Math.floor(Math.random() * this.REGISTER_MESSAGES.length)];
+  //   return template(username, factionName);
+  // }
 
 
   /**
@@ -250,6 +251,7 @@ class TourneyService {
   initDiamondHeist() {
     this.diamondHolder = null;
     this.lastHolder = null;
+    this.lastPasser = null;
     this.isActive = false;
     logger.info('The Black Diamond Heist event has begun!');    
   }

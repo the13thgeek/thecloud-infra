@@ -183,6 +183,14 @@ module.exports = {
     (username1) => `That person isn't in the system, @${username1}. Double check the name and try again.`
   ],
 
+  PASS_BACK_MESSAGES: [
+    (username1, username2) => `@${username1} tries to pass back to @${username2}. @${username2} just handed it to you. Move it forward.`,
+    (username1, username2) => `@${username1} reaches back to @${username2}. That's not how you run a clean operation. Find another hand.`,
+    (username1, username2) => `The Black Diamond doesn't go backwards, @${username1}. @${username2} already did their part.`,
+    (username1, username2) => `@${username1} tries to return the diamond to @${username2}. This is a heist, not a lost and found. Keep it moving.`,
+    (username1, username2) => `@${username2} passed it to you for a reason, @${username1}. Don't hand it straight back. The crew is watching.`
+  ],
+
   ROUND_END_MESSAGES: [
     (username, factionName) => `💎 That's a wrap! @${username} of ${factionName} holds the Black Diamond as the dust settles. +5 points. Well played.`,
     (username, factionName) => `💎 The round is over. @${username} kept their grip to the end. ${factionName} walks away with the bonus. +5 points.`,
