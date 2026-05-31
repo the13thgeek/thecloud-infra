@@ -3,7 +3,7 @@ const UserService = require('./UserService');
 
 class RankingService {
   constructor() {
-    this.TEAM_NAMES = { 1: 'Afterburner', 2: 'Concorde', 3: 'Stratos' };
+    this.TEAM_NAMES = { 1: 'Delta Syndicate', 2: 'Sigma Collective', 3: 'Zeta Enclave' };
   }
 
   /**
@@ -91,7 +91,8 @@ class RankingService {
         level: playerData.level,
         title: playerData.title,
         levelProgress: playerData.progressLevel,
-        team: teamData ? this.TEAM_NAMES[teamData.team_number] : null
+        //team: teamData ? this.TEAM_NAMES[teamData.team_number] : null
+        team: teamData ? teamData.team_number : null
       };
     }));
   }

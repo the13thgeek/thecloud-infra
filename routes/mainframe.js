@@ -25,6 +25,8 @@ router.post('/login-widget', asyncHandler(async (req, res) => {
     twitch_avatar
   );
 
+  console.log(`User data: ${JSON.stringify(user)}`);
+
   await UserService.updateTimestamp(user.id, 'last_login');
 
   return ResponseHandler.success(res, {
