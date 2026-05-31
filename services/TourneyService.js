@@ -7,9 +7,9 @@ class TourneyService {
   constructor() {
     // Faction names
     this.TEAM_NAMES = {
-      1: 'Afterburner', // Delta Syndicate
-      2: 'Concorde', // Sigma Collective
-      3: 'Stratos' // Zeta Enclave
+      1: 'Delta Syndicate', // Delta Syndicate
+      2: 'Sigma Collective', // Sigma Collective
+      3: 'Zeta Enclave' // Zeta Enclave
     };
     
     // Variables/state
@@ -73,9 +73,9 @@ class TourneyService {
     );
 
     // Issue team card
-    // const teamCards = { 1: 33, 2: 34, 3: 35 }; // Delta Syndicate, Sigma Collective, Zeta Enclave
-    // const CardService = require('./CardService');
-    // await CardService.addCardToUser(userId, teamCards[selectedTeam]);
+    const teamCards = { 1: 33, 2: 34, 3: 35 }; // Delta Syndicate, Sigma Collective, Zeta Enclave
+    const CardService = require('./CardService');
+    await CardService.addCardToUser(userId, teamCards[selectedTeam]);
 
     return {
       success: true,
