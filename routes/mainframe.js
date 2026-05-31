@@ -275,10 +275,11 @@ router.post('/send-action', asyncHandler(async (req, res) => {
     for (let i = 0; i < stat_name.length; i++) {
       // Handle sub_months separately
       if (stat_name[i] === 'sub_months') {
-        await db.execute(
-          'UPDATE tbl_users SET sub_months = ? WHERE id = ?',
-          [value[i], user.id]
-        );
+        await UserService.setSubMonths(user.id, value[i]);
+        // await db.execute(
+        //   'UPDATE tbl_users SET sub_months = ? WHERE id = ?',
+        //   [value[i], user.id]
+        // );
       } else {
         await UserService.updateStat(user.id, stat_name[i], value[i], increment[i]);
         const ach = await UserService.checkAchievements(user.id, stat_name[i]);

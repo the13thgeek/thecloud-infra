@@ -349,6 +349,16 @@ class UserService {
   }
 
   /**
+   * Set number of months subscribed
+   */
+  async setSubMonths(userId, subMonths) {
+    await db.execute(
+      'UPDATE tbl_users SET sub_months = ? WHERE id = ?',
+      [subMonths, userId]
+    );
+  }
+
+  /**
    * Get Flight Report for Twitch Username
    */
   async getFlightReport(userName) {
