@@ -146,7 +146,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
   }
 
   // Check if user is holding the diamond
-  if (currentHolder.displayName !== targetUser) {
+  if (currentHolder.displayName.toLowerCase() !== targetUser) {
     // Award false accusation points to target
     Logger.info(`False Accusation: currentHolder: ${currentHolder.displayName} vs target: ${targetUser}`);
     TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus', 'HEIST_STEAL_FALSE');
