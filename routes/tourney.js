@@ -108,7 +108,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
   //const attemptMessage = TourneyService.getRandomMessage('STEAL_ATTEMPT_MESSAGES', twitch_display_name, target_user);
   const targetUser = cleanUsername(target_user);
   const currentHolder = TourneyService.getDiamondHolder();
-  Logger.debug(`currentHolder: ${currentHolder.displayName}, targetUser: ${targetUser}`);
+  Logger.debug(`currentHolder: ${currentHolder?.displayName}, targetUser: ${targetUser}`);
 
   Logger.info(`Steal attempt by @${twitch_display_name} targeting @${targetUser}`);
 

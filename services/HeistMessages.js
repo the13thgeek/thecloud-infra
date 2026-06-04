@@ -33,10 +33,10 @@ module.exports = {
 
   GRAB_MESSAGES : [
     (username, factionName) => `💎 @${username} moves fast through the gallery and snatches the Black Diamond off the floor! ${factionName} is now on the grid. The clock starts!`,
-    (username, factionName) => `💎 The Black Diamond doesn't stay on the floor for long. @${username} gets there first. ${factionName} has 15 minutes before the trace locks in!`,
+    (username, factionName) => `💎 The Black Diamond doesn't stay on the floor for long. @${username} gets there first. ${factionName} has 30 minutes before the trace locks in!`,
     (username, factionName) => `💎 @${username} cuts through the chaos and picks up the Black Diamond. ${factionName} is holding. The biometric clock is running!`,
     (username, factionName) => `💎 @${username} of ${factionName} reaches the diamond first. Off the floor and into their hands! The security system takes notice.`,
-    (username, factionName) => `💎 The scramble ends. @${username} has the Black Diamond. ${factionName} just painted a target on themselves. 15 minutes on the clock!`
+    (username, factionName) => `💎 The scramble ends. @${username} has the Black Diamond. ${factionName} just painted a target on themselves. 30 minutes on the clock!`
   ],
 
   ALREADY_HOLDING_MESSAGES: [
@@ -82,7 +82,7 @@ module.exports = {
     (username1, username2) => `💎 @${username1} lifts the Black Diamond off @${username2} without a sound. The biometric trace shifts! @${username2} is clean. @${username1} is not.`,
     (username1, username2) => `💎 Clean lift! @${username2} didn't feel a thing. The security system is now tracking @${username1}.`,
     (username1, username2) => `💎 @${username1} makes the swap mid-gallery. @${username2} is off the grid. The clock resets — and starts again for @${username1}.`,
-    (username1, username2) => `💎 The Black Diamond changes hands. @${username2} walks away empty-handed. @${username1} just bought themselves 15 minutes!`,
+    (username1, username2) => `💎 The Black Diamond changes hands. @${username2} walks away empty-handed. @${username1} just bought themselves 30 minutes!`,
     (username1, username2) => `💎 Textbook! @${username1} is in, takes the diamond from @${username2}, and disappears back into the crowd. The trace follows.`
   ],
 
