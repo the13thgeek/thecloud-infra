@@ -3,6 +3,9 @@ module.exports = {
     (username) => `Easy, @${username}. Nothing's hit the floor yet. Patience.`,
     (username) => `Hold on, @${username}. The Black Diamond is still secured!`,
     (username) => `Not so fast, @${username}. The Black Diamond hasn't been dropped!`,
+    (username) => `Easy there, @${username}! The Black Diamond is still in its display case. We're bandits, not prophets!`,
+    (username) => `Hold, @${username}! The Black Diamond hasn't even hit the floor yet. This isn't one of those speedrun categories!`,
+    (username) => `The Black Diamond is still secured, @${username}. Even I'm not spawning loot that fast!`,
   ],
 
   INITIAL_DROP_MESSAGES : [
@@ -44,7 +47,10 @@ module.exports = {
     (username) => `@${username} already has it. This is not a drill. They already have it.`,
     (username) => `The Black Diamond is in @${username}'s hands. @${username} is trying to grab the Black Diamond. We'll give them a moment.`,
     (username) => `@${username} reaches for the diamond they are currently holding. The crew needs a break.`,
-    (username) => `@${username} already has the Black Diamond. What exactly is the plan here.`
+    (username) => `@${username} already has the Black Diamond. What exactly is the plan here.`,
+    (username) => `@${username} is attempting to grab the Black Diamond while actively holding the Black Diamond. I process thousands of messages a day and somehow this still surprises me.`,
+    (username) => `@${username} reaches for the diamond currently in their hand. I know I'm just a bot, but I feel like I'm adding another grey hair.`,
+    (username) => `@${username} already has the Black Diamond. We just talked about this. Scroll up.`,
   ],
 
   GRAB_UNAVAILABLE_MESSAGES : [
@@ -91,7 +97,8 @@ module.exports = {
     (username) => `@${username} is their own target apparently. The crew doesn't know what to say.`,
     (username) => `@${username} tries to steal the Black Diamond from @${username}. This investigation is ongoing.`,
     (username) => `@${username} reached into their own pocket. Found the diamond. It was theirs the whole time. Nothing happened.`,
-    (username) => `The Black Diamond was stolen from @${username} by @${username}. We're all just going to move past this.`
+    (username) => `The Black Diamond was stolen from @${username} by @${username}. We're all just going to move past this.`,
+    (username) => `@${username} steals the Black Diamond from @${username}. Case solved!`
   ],
 
   STEAL_FAIL_MESSAGES : [
@@ -124,16 +131,18 @@ module.exports = {
     (username) => `No record of that target. @${username} just robbed a ghost.`,
     (username) => `@${username} named a name nobody recognises. The crew is confused.`,
     (username) => `That person isn't in the system. @${username} wasted a perfectly good attempt.`,
+    (username) => `@${username} no such operative exists. If chat startes inventing imaginary players again, I'm logging off.`
   ],
 
   STEAL_TEAMMATE_MESSAGES : [
-    (username1, username2) => `⚠️ @${username1} tries to steal from their own teammate @${username2}. That's not how this works, @${username1}!`,
-    (username1, username2) => `⚠️ @${username1} reaches for the Black Diamond... but it's with their own teammate @${username2}. Awkward!`,
-    (username1, username2) => `⚠️ @${username1} moves on @${username2} — then notices the badge. Same crew. This stays between them... and now, also chat.`,
-    (username1, username2) => `⚠️ @${username1} gets halfway there before realising @${username2} is on their side. Awkward. Nobody saw that!`,
-    (username1, username2) => `⚠️ @${username1} and @${username2} are on the same team. Use !pass. This isn't that kind of heist.`,
-    (username1, username2) => `⚠️ @${username1} almost robbed their own teammate. @${username2} is not impressed. The group leader facepalms.`,
-    (username1, username2) => `⚠️ That's friendly fire, @${username1}. @${username2} is with you. Save it for the others!`
+    (username1, username2) => `❌ @${username1} tries to steal from their own teammate @${username2}. That's not how this works, @${username1}!`,
+    (username1, username2) => `❌ @${username1} reaches for the Black Diamond... but it's with their own teammate @${username2}. Awkward!`,
+    (username1, username2) => `❌ @${username1} moves on @${username2} — then notices the badge. Same crew. This stays between them... and now, also chat.`,
+    (username1, username2) => `❌ @${username1} gets halfway there before realising @${username2} is on their side. Awkward. Nobody saw that!`,
+    (username1, username2) => `❌ @${username1} and @${username2} are on the same team. Use !pass. This isn't that kind of heist.`,
+    (username1, username2) => `❌ @${username1} almost robbed their own teammate. @${username2} is not impressed. The group leader facepalms.`,
+    (username1, username2) => `❌ That's friendly fire, @${username1}. @${username2} is with you. Save it for the others!`,
+    (username1, username2) => `❌ @${username1} attempts to rob their own teammate @${username2}... HR would like a word.`,
   ],
 
   NOTHING_TO_STEAL_MESSAGES : [
@@ -165,7 +174,9 @@ module.exports = {
     (username1, username2) => `❌ @${username1}. @${username2} is not your teammate. The diamond stays where it is. Please pay attention.`,
     (username1, username2) => `❌ Bold strategy from @${username1} — handing the Black Diamond directly to the opposition. Truly remarkable. The diamond stays put.`,
     (username1, username2) => `❌ @${username1} attempts to pass to @${username2}. A rival. In front of everyone. The crew is having a meeting after this.`,
-    (username1, username2) => `❌ @${username1} that was either a mistake or a betrayal. Either way, @${username2} isn't getting the diamond. Check your roster.`
+    (username1, username2) => `❌ @${username1} that was either a mistake or a betrayal. Either way, @${username2} isn't getting the diamond. Check your roster.`,
+    (username1, username2) => `❌ @${username1} tries to hand the Black Diamond directly to the enemy. That's not a pass. That's surrender!`,
+    (username1, username2) => `❌ @${username1}, I cannot stress this enough: they're the other team!`,
   ],
 
   PASS_SELF_MESSAGES: [
@@ -173,7 +184,10 @@ module.exports = {
     (username) => `@${username} that's not a pass. That's just standing there holding it. Nothing has changed.`,
     (username) => `@${username} attempts a self-pass. The Black Diamond remains exactly where it was... as expected.`,
     (username) => `@${username} is passing to @${username}. This is not how passing works. This is not how any of this works!`,
-    (username) => `The Black Diamond went from @${username} to @${username}. Incredible. Nothing changed.`
+    (username) => `The Black Diamond went from @${username} to @${username}. Incredible. Nothing changed.`,
+    (username) => `Excellent pass. @${username} hands the Black Diamond to... @${username}. Slow clap.`,
+    (username) => `@${username} has successfully transferred ownership from themselves... to themselves. Incredible efficiency.`,
+    (username) => `@${username} is passing the Black Diamond to themselves. The crew is unsure how to react.`,
   ],
 
   PASS_INVALID_TARGET_MESSAGES: [
