@@ -259,7 +259,7 @@ class TourneyService {
   /** 
    * Drop the diamond
    */
-  dropDiamond() {
+  dropDiamond(stealUser = null) {
     let message;
     this.isActive = true;
 
@@ -271,7 +271,11 @@ class TourneyService {
       logger.info(message);
     } else {
       //const template = this.DROP_MESSAGES[Math.floor(Math.random() * this.DROP_MESSAGES.length)];
-      message = this.getRandomMessage('DROP_MESSAGES', this.diamondHolder.displayName);
+      if(stealUser) {
+        message = this.getRandomMessage('STEAL_DROP_MESSAGES', stealUser, this.diamondHolder.displayName);
+      } else {
+        message = this.getRandomMessage('DROP_MESSAGES', this.diamondHolder.displayName);
+      }      
       WebSocketService.broadcast({ type: 'HEIST_DROP', message });
       logger.info(message);
       this.lastHolder = this.diamondHolder;
