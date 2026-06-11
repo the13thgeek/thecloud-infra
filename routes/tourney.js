@@ -133,7 +133,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
     }
 
     // Check is user is trying to steal from self  
-    if (twitch_display_name === targetUser && twitch_display_name === currentHolder.displayName) {   
+    if (twitch_display_name.toLowerCase() === targetUser && currentHolder.displayName.toLowerCase() === targetUser) {   
       const message = TourneyService.getRandomMessage('STEAL_SELF_MESSAGES', twitch_display_name);
       return ResponseHandler.error(res, message, 403);
     }
