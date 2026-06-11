@@ -118,11 +118,11 @@ module.exports = {
   ],
 
   STEAL_INVALID_MESSAGES : [
-    (username1, username2) => `❌ @${username1} tries to steal from @${username2}, but they don't even have the Black Diamond! Oops!`,
-    (username1, username2) => `❌ @${username1} makes a move for @${username2}'s Black Diamond... but @${username2} isn't the holder! That's embarrassing.`,
-    (username1, username2) => `❌ @${username1} tries to steal from @${username2}, but @${username2} isn't holding the Black Diamond. Wrong target!`,
-    (username1, username2) => `❌ @${username1} goes for a steal — but @${username2} doesn't have the Black Diamond! Better check before you wreck, @${username1}.`,
-    (username1, username2) => `❌ @${username1} attempts to steal from @${username2}, but they come up empty. @${username2} isn't the holder!`
+    (username1, username2) => `❌ @${username1} moves on @${username2} — but @${username2} isn't holding the Black Diamond. Wrong target. @${username2} walks away with a hazard bonus for the trouble. +1 point.`,
+    (username1, username2) => `❌ @${username1} cases @${username2} and makes the approach. @${username2} has nothing. The real holder is still out there. @${username2} collects compensation for the interruption. +1 point.`,
+    (username1, username2) => `❌ Sloppy intel, @${username1}. @${username2} was never holding the Black Diamond. They didn't even break a sweat. +1 point for @${username2}'s trouble.`,
+    (username1, username2) => `❌ @${username1} picked the wrong mark. @${username2} wasn't holding anything — and now they're +1 point richer for the inconvenience.`,
+    (username1, username2) => `❌ @${username2} gets a free point tonight, courtesy of @${username1}'s poor reconnaissance. The Black Diamond is still out there. Pay attention.`
   ],
 
   STEAL_INVALID_TARGET_MESSAGES : [

@@ -18,13 +18,41 @@ class TourneyService {
     this.isActive = false; // Track if the event is active
     this.lastPasser = null; // Track who passed it last
 
+    // Queueing
+    this.queue = Promise.resolve();
+    this.queueList = [];
+
     // Rolls
     this.stealRates = {
       drop: 5,
       success: 50,
       fail: 45
     }
-  } 
+  }
+
+  // Enqueue action
+  enqueue(name, fn) {
+    this.queueList.push(name);
+    Logger.info(`Current Queue: ${this.queueList.join(' > ')}`);
+
+    this.queue = this.queue
+      .then(async () => {
+        await fn();
+      })
+      .catch(async () => {
+        await fn();
+      })
+      .finally(() => {
+        this.queueList.shift();
+        if (this.queueList.length > 0) {
+          Logger.info(`Queue: ${this.queueList.join(' > ')}`);
+        } else {
+          Logger.info(`Queue: empty`);
+        }
+      });
+
+    return this.queue;
+  }
 
   /**
    * Register user to a team (auto-balanced)
