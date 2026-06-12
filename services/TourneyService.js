@@ -33,7 +33,7 @@ class TourneyService {
   // Enqueue action
   enqueue(name, fn) {
     this.queueList.push(name);
-    Logger.info(`Current Queue: ${this.queueList.join(' > ')}`);
+    logger.info(`Current Queue: ${this.queueList.join(' > ')}`);
 
     this.queue = this.queue
       .then(async () => {
@@ -45,9 +45,9 @@ class TourneyService {
       .finally(() => {
         this.queueList.shift();
         if (this.queueList.length > 0) {
-          Logger.info(`Queue: ${this.queueList.join(' > ')}`);
+          logger.info(`Queue: ${this.queueList.join(' > ')}`);
         } else {
-          Logger.info(`Queue: empty`);
+          logger.info(`Queue: empty`);
         }
       });
 
