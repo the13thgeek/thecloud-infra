@@ -262,6 +262,43 @@ class TourneyService {
   }
 
   /**
+   * Get members list and scores
+   */
+  async getMembersScore() {
+    const user_scores = await db.execute(`SELECT
+          t.team_number,
+          u.twitch_display_name,
+          t.points
+      FROM tbl_tourney t
+      JOIN tbl_users u
+          ON u.id = t.user_id
+      ORDER BY
+          t.team_number,
+          t.points DESC`);
+
+    const teams = user_scores.reduce((acc, player) => {
+      const team = player.team_number;
+
+      if(!acc[team]) {
+        acc[team] = [];
+      }
+      acc[team].push({
+        name: player.twitch_display_name,
+        points: player.points
+      });
+
+      return acc;
+    }, {});
+
+    const result = Object.entries(teams).map(([teamNumber, players]) => ({
+      teamNumber: Number(teamNumber),
+      players
+    }));
+
+    return result;
+  }
+
+  /**
    * Log tournament score activity
    */
   async logScore(source, points, details, hasCooldown = true) {

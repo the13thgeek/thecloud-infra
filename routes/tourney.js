@@ -291,6 +291,12 @@ router.post('/scores', asyncHandler(async (req, res) => {
   return ResponseHandler.success(res, scoreList, 'Current Scores');
 }));
 
+// POST /tourney/members
+router.post('/members', asyncHandler(async (req, res) => {
+  const memberList = await TourneyService.getMembersScore();
+  return ResponseHandler.success(res, memberList, 'Current Scores');
+}));
+
 // POST /tourney/status
 router.post('/status', asyncHandler(async (req, res) => {
   const data = {
