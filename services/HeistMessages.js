@@ -354,6 +354,90 @@ module.exports = {
     (username, factionName) => `💎 The Black Diamond stays with @${username} as the round closes. ${factionName} earns the +5. Don't spend it all in one place.`
   ],
 
+  CONTRABAND_REDEEM_MESSAGES: [
+    (username) => `🏴‍☠️ @${username} just made contact with the black market. Check your DMs — something's waiting.`,
+    (username) => `🏴‍☠️ A package was slipped to @${username} in the shadows. Whispers don't lie. Go check.`,
+    (username) => `🏴‍☠️ @${username} has a new asset. The details slid into their DMs.`,
+    (username) => `🏴‍☠️ The black market came through for @${username}. Check your whispers before you do anything else.`,
+    (username) => `🏴‍☠️ @${username} just got something off the books. It's sitting in their DMs, waiting to be read.`,
+    (username) => `🏴‍☠️ Deal's done. @${username} walks away with something. Check your whispers, operative.`,
+    (username) => `🏴‍☠️ @${username} just acquired contraband. The intel is in their DMs — don't keep it waiting.`
+  ],
+
+  INSURANCE_ARM_MESSAGES: [
+    (username, factionName) => `@${username} signs the paperwork. ${factionName} is now covered against the unexpected.`,
+    (username, factionName) => `Policy active. ${factionName} just got a little harder to catch off guard, courtesy of @${username}.`,
+    (username, factionName) => `@${username} files the claim before there's even an incident. ${factionName} is insured.`,
+    (username, factionName) => `Coverage confirmed. @${username} has ${factionName} protected — for now.`
+  ],
+
+  INSURANCE_TRIGGER_MESSAGES: [
+    (factionName, username) => `✅ The Black Diamond was about to hit the floor — but ${factionName} had a policy in place. Quietly passed to @${username} instead. Nothing to see here.`,
+    (factionName, username) => `✅ Drop averted. ${factionName} cashes in their insurance policy. The Black Diamond lands safely with @${username}.`,
+    (factionName, username) => `✅ ${factionName} just dodged a drop entirely. Coverage paid out — @${username} is now holding the Black Diamond.`,
+    (factionName, username) => `✅ Someone read the fine print. ${factionName}'s insurance kicks in, and the Black Diamond quietly ends up with @${username}.`
+  ],
+
+  CONTRABAND_WHISPER_MESSAGES: {
+    lupin: (username) => `🎭 THE LUPIN PROTOCOL acquired. Your next steal attempt gets a serious edge — 70% success, 28% fail, 2% drop. This triggers automatically on your next !steal, no action needed. Single-use — it's gone after that one attempt, win or lose.`,
+    smokescreen: (username) => `💨 SMOKESCREEN acquired. The next time someone tries to steal the Black Diamond from you, it auto-fails — no roll, no risk. Triggers automatically the moment someone attempts to steal from you. Single-use — it's gone after blocking that one attempt.`,
+    flashpoint: (username) => `🔥 FLASHPOINT acquired. Type !use to force the Black Diamond to drop immediately, bypassing the timer completely — wherever it currently is. Single-use — gone the moment you trigger it. Use it wisely. Or chaotically. Your call.`,
+    intel: (username) => `🕵️ INTEL acquired. Type !use to request a report on which faction currently holds the Black Diamond. Reports may be unreliable if the target faction has Firewall active. Single-use — consumed the moment you ask, regardless of the answer you get.`,
+    firewall: (username) => `🛡️ FIREWALL acquired. Type !use to arm it. Once armed, it protects your entire faction from the next Intel attempt against you — auto-blocking or feeding them false information. Single-use — gone the moment it intercepts one Intel attempt.`,
+    insurance: (username) => `✅ INSURANCE acquired. Type !use to activate the policy. Once active, it protects your entire faction from one timer-expiry or steal-fumble drop — the diamond auto-passes to a random teammate instead of hitting the floor. Fine print: does NOT cover Flashpoint. Single-use — gone the moment it pays out.`
+  },
+
+  CONTRABAND_NOT_REGISTERED_MESSAGES: [
+    (username) => `@${username} tries to make contact with the black market, but they're not part of any crew. Type !tourney to get registered first.`,
+    (username) => `The black market doesn't deal with outsiders, @${username}. Type !tourney to join a faction first.`,
+    (username) => `@${username} isn't on any roster. No deal. Type !tourney to get signed on first.`,
+    (username) => `No faction, no favours, @${username}. Type !tourney to register before trying the black market.`
+  ],
+
+  NOT_REGISTERED_MESSAGES: {
+    user_not_found: [
+      (username) => `@${username} isn't even on the radar yet. Type !tourney to get started.`,
+      (username) => `No record of @${username} anywhere. Type !tourney first.`,
+      (username) => `@${username} doesn't exist in this world. Yet. Type !tourney to fix that.`,
+      (username) => `The crew has never heard of @${username}. Type !tourney to get on the books.`
+    ],
+    not_registered: [
+      (username) => `@${username} isn't signed on with any crew yet. Type !tourney to join a faction.`,
+      (username) => `@${username} is known, but not registered for this event. Type !tourney to join in.`,
+      (username) => `No faction, no favors, @${username}. Type !tourney to get registered.`,
+      (username) => `@${username} is walking around without a crew. Type !tourney to fix that.`
+    ]
+  },
+
+  SMOKESCREEN_BLOCK_MESSAGES: [
+    (username1, username2) => `💨❌ @${username1} moves in on @${username2} — but the room fills with smoke. By the time it clears, the Black Diamond hasn't moved. Smokescreen deployed.`,
+    (username1, username2) => `💨❌ @${username2} had this covered. A smokescreen drops the second @${username1} gets close. The steal never had a chance.`,
+    (username1, username2) => `💨❌ @${username1} walks right into it. @${username2}'s smokescreen triggers instantly. No diamond, no trace, no chance.`,
+    (username1, username2) => `💨❌ Visibility: zero. @${username1}'s steal attempt on @${username2} is swallowed by smoke before it even begins.`
+  ],
+
+  LUPIN_SUCCESS_MESSAGES: [
+    (username1, username2) => `🎭💎 @${username1} moves like a ghost. The Lupin Protocol in full effect — the steal from @${username2} goes off without a hitch.`,
+    (username1, username2) => `🎭💎 Textbook. @${username1} runs the Lupin Protocol to the letter. @${username2} never even saw them coming.`,
+    (username1, username2) => `🎭💎 @${username2} never stood a chance. @${username1} pulled off a Lupin-grade lift — clean, quiet, gone.`,
+    (username1, username2) => `🎭💎 The Lupin Protocol pays off. @${username1} lifts the Black Diamond from @${username2} like it was nothing.`
+  ],
+
+  NO_ACTIVE_ITEM_MESSAGES: [
+    (username) => `@${username} reaches into their coat. Nothing there. The black market doesn't owe you anything.`,
+    (username) => `@${username} checks their inventory. Empty. Maybe try the black market sometime.`,
+    (username) => `There's nothing for @${username} to use right now. The pockets are empty. So is the plan.`,
+    (username) => `@${username} fumbles around, looking for something to activate. There's nothing there.`,
+    (username) => `Nice try, @${username}. You're not holding any contraband at the moment.`
+  ],
+
+  ALREADY_ACTIVE_MESSAGES: [
+    (username) => `@${username}'s item is already in effect. No need to activate it twice.`,
+    (username) => `That's already armed, @${username}. Sit tight.`,
+    (username) => `@${username} tries to activate something that's already running. The system doesn't work that way.`,
+    (username) => `Already active, @${username}. The crew appreciates the enthusiasm, but it's done.`
+  ],
+
   DIAMOND_DROP_MESSAGE: [
     () => `💎 The Black Diamond hits the floor! First one to !grab it claims it!!`
   ],

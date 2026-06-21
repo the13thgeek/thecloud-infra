@@ -28,6 +28,16 @@ class TourneyService {
       success: 50,
       fail: 45
     }
+
+    // Contraband
+    this.contraBandRates = {
+      lupin: 45,      // original: 35
+      smokescreen: 35, // original: 27
+      insurance: 20,   // original: 15
+      flashpoint: 0,   // temp disabled — original: 7
+      intel: 0,        // temp disabled — original: 8
+      firewall: 0      // temp disabled — original: 8
+    };
   }
 
   // Enqueue action
@@ -127,47 +137,29 @@ class TourneyService {
    * Get user's faction info
    */
   async getUserFaction(userName) {
-    const user = await db.executeOne(
-      'SELECT id FROM tbl_users WHERE twitch_display_name = ?',
+    const row = await db.executeOne(
+      'SELECT * FROM vw_tourney_roster WHERE twitch_display_name = ?',
       [userName]
     );
 
-    if (!user) {
+    if (!row) {
       return {
         success: false,
+        reason: 'not_registered', // covers both "doesn't exist" and "exists but not registered" since the view only returns rows for users with a tbl_tourney entry
         user_id: null,
         user_name: userName,
         team_number: null,
-        team_name: null,
-        message: `User ${userName} not found in database.`
-      };
-    }
-    logger.info(`Found user in database: ${JSON.stringify(user)}`);
-
-    const teamData = await db.executeOne(
-      'SELECT team_number, points FROM tbl_tourney WHERE user_id = ?',
-      [user.id]
-    );
-    logger.info(`Found team data for user ${userName}: ${JSON.stringify(teamData)}`);
-
-    if (!teamData) {
-      return {
-        success: false,
-        user_id: user.id,
-        user_name: userName,
-        team_number: null,
-        team_name: null,
-        message: `${userName} is not registered for the event. Please type !register to join a faction and start earning points!`
+        team_name: null
       };
     }
 
     return {
       success: true,
-      user_id: user.id,
+      user_id: row.user_id,
       user_name: userName,
-      team_number: teamData.team_number,
-      team_name: this.TEAM_NAMES[teamData.team_number],
-      points: teamData.points
+      team_number: row.team_number,
+      team_name: this.TEAM_NAMES[row.team_number],
+      points: row.points
     };
   }
 
@@ -184,7 +176,7 @@ class TourneyService {
       };
     }    
 
-    // Award points
+    // Award points   
     await db.execute(
       'UPDATE tbl_tourney SET points = points + ?, last_update = CURRENT_TIMESTAMP WHERE user_id = ?',
       [points, faction.user_id]
@@ -313,40 +305,81 @@ class TourneyService {
   /**
    * Initialize/reset heist event state
    */
-  initDiamondHeist() {
+  async initDiamondHeist() {
     this.diamondHolder = null;
     this.lastHolder = null;
     this.lastPasser = null;
     this.isActive = false;
+    await this.clearActiveItem(); // reset all items
     logger.info('The Black Diamond Heist event has begun!');    
   }
 
   /** 
    * Drop the diamond
+   * Sources: 'timer' | 'fumble' | 'flashpoint'
    */
-  dropDiamond(stealUser = null) {
+  async dropDiamond(stealUser = null, source = 'timer') {
     let message;
     this.isActive = true;
 
-    // Check if this is the first drop or if the current holder dropped it
+    // First drop - no holder yet
     if(!this.diamondHolder) {
-      //const template = this.INITIAL_DROP_MESSAGES[Math.floor(Math.random() * this.INITIAL_DROP_MESSAGES.length)];logger.info(message);
       message = this.getRandomMessage('INITIAL_DROP_MESSAGES');
       WebSocketService.broadcast({ type: 'HEIST_START', message });
-      logger.info(message);
-    } else {
-      //const template = this.DROP_MESSAGES[Math.floor(Math.random() * this.DROP_MESSAGES.length)];
-      if(stealUser) {
-        message = this.getRandomMessage('STEAL_DROP_MESSAGES', stealUser, this.diamondHolder.displayName);
-      } else {
-        message = this.getRandomMessage('DROP_MESSAGES', this.diamondHolder.displayName);
-      }      
-      WebSocketService.broadcast({ type: 'HEIST_DROP', message });
-      logger.info(message);
-      this.lastHolder = this.diamondHolder;
-      this.diamondHolder = null;
+      return {
+        intercepted: false, message, newHolder: null
+      };
     }
-    return message;
+
+    // Check Insurance - Flashpoint bypass
+    if(source !== 'flashpoint') {
+      logger.debug('Insurance check - non-Flashpoint')
+      const factionId = this.diamondHolder.factionId;
+      logger.debug(`factionID: ${factionId}`);
+      const insuredUser = await this.getFactionActiveItemHolder(factionId, 'insurance1');
+      logger.debug(`insuredUser: ${JSON.stringify(insuredUser)}`);
+
+      if(insuredUser) {
+        // Pick a random teammate except the holder
+        const newHolder = await db.executeOne(
+          'SELECT * FROM vw_tourney_roster WHERE team_number = ? AND user_id != ? ORDER BY RAND() LIMIT 1',
+          [factionId, this.diamondHolder.userId]
+        );
+
+        if(newHolder) {
+          await this.clearActiveItem(insuredUser.twitch_display_name);
+
+          this.lastHolder = this.diamondHolder;
+          this.diamondHolder = {
+            twitchId: newHolder.twitch_id,
+            displayName: newHolder.twitch_display_name,
+            avatar: newHolder.twitch_avatar,
+            faction: this.TEAM_NAMES[newHolder.team_number],
+            factionId: newHolder.team_number,
+            userId: newHolder.user_id
+          }
+
+          message = this.getRandomMessage('INSURANCE_TRIGGER_MESSAGES',  this.diamondHolder.faction, newHolder.twitch_display_name);
+          WebSocketService.broadcast({ type: 'HEIST_PASS', message });
+          return {
+            intercepted: true, message, newHolder: this.diamondHolder 
+          }
+        }
+      }
+    }
+
+    if (stealUser) {
+      message = this.getRandomMessage('STEAL_DROP_MESSAGES', stealUser, this.diamondHolder.displayName);
+    } else {
+      message = this.getRandomMessage('DROP_MESSAGES', this.diamondHolder.displayName);
+    }
+    WebSocketService.broadcast({ type: 'HEIST_DROP', message });
+    logger.info(message);
+
+    this.lastHolder = this.diamondHolder;
+    this.diamondHolder = null;
+
+    return { intercepted: false, message, newHolder: null };
   }
 
   /**
@@ -376,12 +409,23 @@ class TourneyService {
    * get random message by key with optional arguments for template functions
    */
   getRandomMessage(key, ...args) {
-    logger.debug(`Retrieving random message for key: ${key} with args: ${args}`);
-    const messages = HeistMessages[key];
-    logger.debug(`Found messages: ${messages ? messages.length : 0} for key: ${key}`);
-    if (!messages) return null;
-    const i = Math.floor(Math.random() * messages.length);
-    return messages[i](...args);
+    // logger.debug(`Retrieving random message for key: ${key} with args: ${args}`);
+    // const messages = HeistMessages[key];
+    // logger.debug(`Found messages: ${messages ? messages.length : 0} for key: ${key}`);
+    // if (!messages) return null;
+    // const i = Math.floor(Math.random() * messages.length);
+    // return messages[i](...args);
+    const path = key.split('.');
+    let pool = HeistMessages;
+
+    for(const segment of path) {
+      pool = pool?.[segment];
+    }
+
+    if (!pool) return null;
+
+    const i = Math.floor(Math.random() * pool.length);
+    return pool[i](...args);
   }
 
   /**
@@ -441,6 +485,91 @@ class TourneyService {
   async getStandings() {
     const scoreboard = await this.getScoreboard();
     return scoreboard.scores.sort((a, b) => b.total_points - a.total_points);
+  }
+
+  /**
+   * Roll contraband item drop
+   */
+  rollContrabandItem() {
+    const roll = Math.random() * 100;
+    let cumulative = 0;
+
+    for (const [item, rate] of Object.entries(this.contraBandRates)) {
+      cumulative += rate;
+      if (roll <= cumulative) {
+        if(item === 'firewall') return 'firewall0';
+        if(item === 'insurance') return 'insurance0'
+        return item;
+      }
+    }
+
+    // Fallback in case of floating point edge cases
+    return 'inside_job';
+  }
+
+  /**
+   * Contraband whisper message
+   */
+  getContrabandWhisper(itemName, userName) {
+    return HeistMessages.CONTRABAND_WHISPER_MESSAGES[itemName](userName);
+  }
+
+  /**
+   * Assign contraband item
+   */
+  async assignActiveItem(userId, itemName) {
+    await db.execute(
+      'UPDATE tbl_tourney SET active_item = ?, last_update = NOW() WHERE user_id = ?',
+      [itemName, userId]
+    );
+  }
+
+  /**
+   * Retrieve a user's active contraband
+   */
+  async getActiveItem(userName) {
+    const row = await db.executeOne(
+      'SELECT active_item FROM vw_tourney_roster WHERE twitch_display_name = ?',
+      [userName]
+    );
+
+    return row?.active_item || null;
+  }
+
+  /**
+   * Remove a user's contraband
+   * If null, removes all users' active items
+   */
+  async clearActiveItem(userName = null) {
+    logger.debug(`clearActiveItem(${userName})`);
+    if (!userName) {
+      // Clear for everyone (e.g. round reset)
+      await db.execute('UPDATE tbl_tourney SET active_item = NULL');
+      return;
+    }
+
+    const user = await db.executeOne(
+      'SELECT id FROM tbl_users WHERE twitch_display_name = ?',
+      [userName]
+    );
+
+    if (!user) return;
+
+    await db.execute(
+      'UPDATE tbl_tourney SET active_item = NULL WHERE user_id = ?',
+      [user.id]
+    );
+  }
+
+  /**
+   * Check if someone on a team has a contraband item
+   */
+  async getFactionActiveItemHolder(factionId, itemValue) {
+    logger.debug(`getFactionActiveItemHolder(${factionId}, '${itemValue}')`)
+    return await db.executeOne(
+      'SELECT * FROM vw_tourney_roster WHERE team_number = ? AND active_item = ?',
+      [factionId, itemValue]
+    );
   }
 }
 

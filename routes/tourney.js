@@ -24,16 +24,16 @@ router.post('/register', asyncHandler(async (req, res) => {
 
 // POST /tourney/init
 router.post('/init', asyncHandler(async (req, res) => {
-  TourneyService.initDiamondHeist();
+  await TourneyService.initDiamondHeist();
   Logger.info('Tournament initialized/reset');
   return ResponseHandler.success(res, {}, 'Tournament initialized');
 }));
 
 // POST /tourney/drop - signal start of round or perform drop
 router.post('/drop', asyncHandler(async (req, res) => {
-  const message = TourneyService.dropDiamond();
-  Logger.info(message);
-  return ResponseHandler.success(res, { message }, 'Diamond dropped');
+  const result = await TourneyService.dropDiamond();
+  Logger.info(result.message);
+  return ResponseHandler.success(res, result, 'Diamond dropped');
 }));
 
 // POST /tourney/grab
@@ -89,7 +89,8 @@ router.post('/grab', asyncHandler(async (req, res) => {
         displayName: twitch_display_name,
         avatar: twitch_avatar,
         faction: userFaction.team_name,
-        factionId: userFaction.team_number
+        factionId: userFaction.team_number,
+        userId: user.id
       }
 
       // Award points
@@ -167,8 +168,29 @@ router.post('/steal', asyncHandler(async (req, res) => {
         return ResponseHandler.error(res, message, 403);
       }
 
+      // Check stealer's Lupin
+      const stealerItem = await TourneyService.getActiveItem(twitch_display_name);
+      Logger.debug(`stealer: ${twitch_display_name} with ${stealerItem}`);
+      let stealRates = TourneyService.stealRates;
+      let usingLupin = false;
+
+      if (stealerItem === 'lupin') {
+        usingLupin = true;
+        stealRates = { drop: 2, success: 70, fail: 28 };
+        Logger.debug(`if (stealerItem === 'lupin')`);
+        await TourneyService.clearActiveItem(twitch_display_name);
+      }
+
+      // Check holder's Smokescreen
+      const holderItem = await TourneyService.getActiveItem(currentHolder.displayName);
+      if (holderItem === 'smokescreen') {
+        await TourneyService.clearActiveItem(currentHolder.displayName);
+        const message = TourneyService.getRandomMessage('SMOKESCREEN_BLOCK_MESSAGES', twitch_display_name, targetUser);
+        return ResponseHandler.error(res, message, 403);
+      }
+      
       // All checks passed, attempt steal, roll dice
-      const { drop, success } = TourneyService.stealRates;
+      const { drop, success } = stealRates;
       const roll = Math.random() * 100;
       Logger.info(`Steal attempt by @${twitch_display_name} on @${targetUser}. Roll: ${roll.toFixed(2)} (Drop: ${drop}%, Success: ${success}%)`);
 
@@ -192,7 +214,8 @@ router.post('/steal', asyncHandler(async (req, res) => {
         // Reset passer data
         TourneyService.lastPasser = null;
 
-        const message = TourneyService.getRandomMessage('STEAL_SUCCESS_MESSAGES', twitch_display_name, targetUser);
+        const messageKey = usingLupin ? 'LUPIN_SUCCESS_MESSAGES' : 'STEAL_SUCCESS_MESSAGES';
+        const message = TourneyService.getRandomMessage(messageKey, twitch_display_name, targetUser);
         return ResponseHandler.success(res, { outcome: 'success', message, faction: userFaction.team_number }, message);
       } else {
         // 45% failure - steal fails
@@ -268,7 +291,8 @@ router.post('/pass', asyncHandler(async (req, res) => {
         displayName: newHolder.twitch_display_name,
         avatar: newHolder.twitch_avatar,
         faction: targetUserFaction.team_name,
-        factionId: targetUserFaction.team_number
+        factionId: targetUserFaction.team_number,
+        userId: newHolder.id
       }
       
       // Award points
@@ -325,6 +349,77 @@ router.post('/end-round', asyncHandler(async (req, res) => {
 
   const message = TourneyService.getRandomMessage('ROUND_END_MESSAGES', currentHolder.displayName, currentHolder.faction);
   return ResponseHandler.success(res, currentHolder, message);
+}));
+
+// POST /tourney/contraband
+router.post(`/contraband`, asyncHandler(async (req, res) => {
+  const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar } = req.body;
+  
+  const user = await UserService.getUserByTwitchId(twitch_id, twitch_display_name, twitch_avatar);
+
+  // Check if user is registered
+  const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+
+  if (!userFaction.success) {
+    const message = TourneyService.getRandomMessage(`NOT_REGISTERED_MESSAGES.${userFaction.reason}`, twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+  
+  const item = TourneyService.rollContrabandItem();
+  await TourneyService.assignActiveItem(user.id, item);
+
+  const messageKey = item.replace(/[01]$/, '');
+  const publicMessage = TourneyService.getRandomMessage('CONTRABAND_REDEEM_MESSAGES', twitch_display_name);
+  const whisperMessage = TourneyService.getContrabandWhisper(messageKey, twitch_display_name);
+
+  return ResponseHandler.success(res, {whisper: whisperMessage}, publicMessage);
+}));
+
+// POST /tourney/use
+router.post('/use', asyncHandler(async (req, res) => {
+  const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar } = req.body;
+
+  const user = await UserService.getUserByTwitchId(twitch_id, twitch_display_name, twitch_avatar);
+  const activeItem = await TourneyService.getActiveItem(twitch_display_name);
+
+  if (!activeItem) {
+    const message = TourneyService.getRandomMessage('NO_ACTIVE_ITEM_MESSAGES', twitch_display_name);
+    return ResponseHandler.error(res, message, 403);
+  }
+
+  switch (activeItem) {
+    case 'insurance0': {
+      await TourneyService.assignActiveItem(user.id, 'insurance1');
+      const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+      const message = TourneyService.getRandomMessage('INSURANCE_ARM_MESSAGES', twitch_display_name, userFaction.team_name);
+      return ResponseHandler.success(res, { message }, message);
+    }
+
+    case 'insurance1': {
+      const message = TourneyService.getRandomMessage('ALREADY_ACTIVE_MESSAGES', twitch_display_name);
+      return ResponseHandler.error(res, message, 403);
+    }
+
+    case 'lupin': {
+      const message = TourneyService.getRandomMessage('ALREADY_ACTIVE_MESSAGES', twitch_display_name);
+      return ResponseHandler.error(res, message, 403);
+    }
+
+    case 'smokescreen': {
+      const message = TourneyService.getRandomMessage('ALREADY_ACTIVE_MESSAGES', twitch_display_name);
+      return ResponseHandler.error(res, message, 403);
+    }
+
+    // case 'firewall0': ... (later)
+    // case 'flashpoint': ... (later)
+    // case 'intel': ... (later)
+
+    default: {
+      const message = TourneyService.getRandomMessage('NO_ACTIVE_ITEM_MESSAGES', twitch_display_name);
+      return ResponseHandler.error(res, message, 403);
+    }   
+
+  }
 }));
 
 module.exports = router;
