@@ -567,7 +567,7 @@ class TourneyService {
   async getFactionActiveItemHolder(factionId, itemValue) {
     logger.debug(`getFactionActiveItemHolder(${factionId}, '${itemValue}')`)
     return await db.executeOne(
-      'SELECT * FROM vw_tourney_roster WHERE team_number = ? AND active_item = ?',
+      'SELECT * FROM vw_tourney_roster WHERE team_number = ? AND active_item = ? LIMIT 1',
       [factionId, itemValue]
     );
   }
