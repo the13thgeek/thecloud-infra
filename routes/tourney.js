@@ -196,7 +196,8 @@ router.post('/steal', asyncHandler(async (req, res) => {
 
       if (roll <= drop) {
         // 5% fumble - current holder drops the diamond
-        let message = TourneyService.dropDiamond(twitch_display_name);
+        let outputres = TourneyService.dropDiamond(twitch_display_name);
+        let message = outputres.message;
         //return ResponseHandler.success(res, { outcome: 'drop', message }, message);
         return ResponseHandler.error(res, message, 403);
       } else if (roll <= drop + success) {
