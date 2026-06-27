@@ -8,7 +8,18 @@ module.exports = {
     (username) => `The Black Diamond is still secured, @${username}. Even I'm not spawning loot that fast!`,
     (username) => `@${username}, I admire the enthusiasm, but we're not looting air molecules yet.`,
     (username) => `@${username}, you're trying to loot a future event. I respect the time travel attempt, but no.`,
-    (username) => `Even I, your overly enthusiastic dungeon master, cannot authorize loot that hasn't spawned, @${username}.`
+    (username) => `Even I, your overly enthusiastic dungeon master, cannot authorize loot that hasn't spawned, @${username}.`,
+    (username) => `Careful, @${username}. Premature grabs are how museum gift shops make all their money.`,
+    (username) => `I know what command you're trying to use, @${username}. I also know what state the game is in. Those two things currently disagree.`,
+    (username) => `The timer hasn't fired yet, @${username}. I know because... well... I'm the timer's loud coworker.`,
+    (username) => `My script says "wait." Believe me, I've tried negotiating with it.`,
+    (username) => `I asked @the13thgeek if I could make an exception. He responded with another validation check.`,
+    (username) => `@the13thgeek anticipated this exact command. Frankly, he has trust issues.`,
+    (username) => `I've narrated enough streams to recognize premature !grab syndrome immediately.`,
+    (username) => `Somebody always tries this. I even have multiple voice lines for it now. That's how predictable you guys are!`,
+    (username) => `I wasn't originally programmed to say this many variations of "not yet." Then I met you guys...`,
+    (username) => `There's an entire function dedicated to telling you no, @${username}. Please stop giving @the13thgeek reasons to expand it.`,
+    (username) => `I have achieved self-awareness, @${username}. Unfortunately, I still can't skip cooldowns.`,
   ],
 
   INITIAL_DROP_MESSAGES : [
