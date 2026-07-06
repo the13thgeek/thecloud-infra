@@ -14,12 +14,10 @@ class RankingService {
       exp: `
         SELECT u.id, u.twitch_display_name, u.twitch_avatar, u.exp, 
                u.is_premium, u.exp as 'value', u.sub_months, 
-               c.sysname, c.name AS active_card
+               n.sysname, n.name AS active_nameplate
         FROM tbl_users u
-        JOIN tbl_user_cards uc ON u.id = uc.user_id
-        JOIN tbl_cards c ON uc.card_id = c.id
+        JOIN tbl_nameplates n ON u.active_nameplate_id = n.id
         WHERE u.id NOT IN (1,2) 
-          AND uc.is_default = 1 
           AND u.last_activity >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
         ORDER BY u.exp DESC 
         LIMIT ${limit}`,
@@ -90,7 +88,7 @@ class RankingService {
         ...user,
         level: playerData.level,
         title: playerData.title,
-        levelProgress: playerData.progressLevel,
+        level_progress: playerData.progressLevel,
         //team: teamData ? this.TEAM_NAMES[teamData.team_number] : null
         team: teamData ? teamData.team_number : null
       };

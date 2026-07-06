@@ -110,10 +110,10 @@ class TourneyService {
       [userId, selectedTeam]
     );
 
-    // Issue team card
-    const teamCards = { 1: 33, 2: 34, 3: 35 }; // Delta Syndicate, Sigma Collective, Zeta Enclave
-    const CardService = require('./CardService');
-    await CardService.addCardToUser(userId, teamCards[selectedTeam]);
+    // Issue faction nameplate
+    const teamNameplateIds = { 1: 33, 2: 34, 3: 35 }; // Delta Syndicate, Sigma Collective, Zeta Enclave
+    const NameplateService = require('./NameplateService');
+    await NameplateService.addNameplateToUser(userId, teamNameplateIds[selectedTeam]);
 
     return {
       success: true,

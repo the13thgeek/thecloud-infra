@@ -152,12 +152,12 @@ class UserService {
   }
 
   /**
-   * Enrich user data with cards, stats, achievements, etc.
+   * Enrich user data with equipped items, stats, achievements, etc.
    */
   async enrichUserData(user, isPremium = null) {
-    const [playerLevel, cards, stats, achievements, team] = await Promise.all([
+    const [playerLevel, nameplateData, stats, achievements, team] = await Promise.all([
       this.getPlayerLevel(user.exp),
-      this.getUserCards(user.id, isPremium),
+      this.getUserNameplates(user.id, isPremium),
       this.getUserStats(user.id),
       this.getUserAchievements(user.id),
       this.getUserTeam(user.id)
@@ -167,9 +167,13 @@ class UserService {
       ...user,
       level: playerLevel.level,
       title: playerLevel.title,
-      levelProgress: playerLevel.progressLevel,
-      cards: cards.cards,
-      card_default: cards.default,
+      level_progress: playerLevel.progressLevel,
+      nameplates: nameplateData.nameplates,
+      // Equipped items, structured for future expansion (e.g. equipped.badges: up to 3,
+      // equipped.title: 1) alongside tbl_user_active_badges / tbl_users.active_title_id.
+      equipped: {
+        nameplate: nameplateData.default
+      },
       stats,
       achievements,
       team
@@ -188,61 +192,76 @@ class UserService {
   }
 
   /**
-   * Get user's cards
+   * Get user's nameplates
    */
-  async getUserCards(userId, isPremium = false) {
-    const cards = await db.execute(
-      `SELECT c.*, uc.user_id, uc.is_default, uc.card_id
-       FROM tbl_cards c
-       INNER JOIN tbl_user_cards uc ON c.id = uc.card_id
-       WHERE uc.user_id = ?
-       ORDER BY
-         CASE 
-           WHEN LEFT(c.catalog_no, 2) IN ('GX', 'EX', 'SP') THEN 1
-           WHEN LEFT(c.catalog_no, 2) IN ('RG', 'RP') THEN 2
-           ELSE 3
-         END,
-         c.is_premium DESC,
-         c.catalog_no,
-         c.name`,
+  async getUserNameplates(userId, isPremium = false) {
+    const nameplates = await db.execute(
+      `SELECT
+            np.*,
+            unp.user_id,
+            unp.nameplate_id,
+            CASE
+                WHEN u.active_nameplate_id = np.id THEN 1
+                ELSE 0
+            END AS is_equipped
+        FROM tbl_nameplates np
+        INNER JOIN tbl_user_nameplates unp
+            ON np.id = unp.nameplate_id
+        INNER JOIN tbl_users u
+            ON u.id = unp.user_id
+        WHERE unp.user_id = ?
+        ORDER BY
+            CASE
+                WHEN LEFT(np.catalog_no, 2) IN ('GX', 'EX', 'SP') THEN 1
+                WHEN LEFT(np.catalog_no, 2) IN ('RG', 'RP') THEN 2
+                ELSE 3
+            END,
+            np.is_premium DESC,
+            np.catalog_no,
+            np.name;`,
       [userId]
     );
 
-    // Issue first card if user has none
-    if (cards.length === 0) {
-      const cardId = isPremium ? 2 : 1;
+    // Issue first nameplate if user has none
+    if (nameplates.length === 0) {
+      const nameplateId = isPremium ? 2 : 1;
       await db.execute(
-        'INSERT INTO tbl_user_cards(user_id, card_id, is_default) VALUES(?,?,?)',
-        [userId, cardId, 1]
+        'INSERT INTO tbl_user_nameplates(user_id, nameplate_id) VALUES(?,?)',
+        [userId, nameplateId]
       );
-      return await this.getUserCards(userId, isPremium);
+      await db.execute(
+        'UPDATE tbl_users SET active_nameplate_id = ? WHERE id = ?',
+        [nameplateId, userId]
+      );
+      return await this.getUserNameplates(userId, isPremium);
     }
 
-    // Handle premium card for existing users
+    // Handle premium nameplate for existing users
     if (isPremium) {
-      const hasPremium = cards.some(card => card.card_id === 2);
+      const hasPremium = nameplates.some(nameplate => nameplate.nameplate_id === 2);
       if (!hasPremium) {
         await db.execute(
-          'UPDATE tbl_user_cards SET is_default = 0 WHERE user_id = ?',
-          [userId]
+          'UPDATE tbl_users SET active_nameplate_id = ? WHERE id = ?',
+          [2, userId]
         );
         await db.execute(
-          'INSERT INTO tbl_user_cards(user_id, card_id, is_default) VALUES(?,?,?)',
-          [userId, 2, 1]
+          'INSERT INTO tbl_user_nameplates(user_id, nameplate_id) VALUES(?,?)',
+          [userId, 2]
         );
-        return await this.getUserCards(userId, isPremium);
+        return await this.getUserNameplates(userId, isPremium);
       }
     }
 
-    const defaultCard = await db.executeOne(
-      `SELECT c.*, uc.is_default, uc.card_id
-       FROM tbl_cards c
-       INNER JOIN tbl_user_cards uc ON c.id = uc.card_id
-       WHERE uc.user_id = ? AND uc.is_default = 1`,
+    const defaultNameplate = await db.executeOne(
+      `SELECT np.*
+        FROM tbl_nameplates np
+        INNER JOIN tbl_users u
+          ON u.active_nameplate_id = np.id
+        WHERE u.id = ?`,
       [userId]
     );
 
-    return { cards, default: defaultCard };
+    return { nameplates, default: defaultNameplate };
   }
 
   /**

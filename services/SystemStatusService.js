@@ -173,10 +173,10 @@ class SystemStatusService {
         FROM tbl_users
       `);
 
-      const cardStats = await db.executeOne(`
+      const nameplateStats = await db.executeOne(`
         SELECT 
-          COUNT(*) as total_cards_issued
-        FROM tbl_user_cards
+          COUNT(*) as total_nameplates_issued
+        FROM tbl_user_nameplates
       `);
 
       const recentActivity = await db.executeOne(`
@@ -194,7 +194,7 @@ class SystemStatusService {
           activeUsers: userStats.active_users,
           premiumUsers: userStats.premium_users,
           totalExp: userStats.total_exp,
-          cardsIssued: cardStats.total_cards_issued,
+          nameplatesIssued: nameplateStats.total_nameplates_issued,
           activeLastWeek: recentActivity.count
         },
         system: {
