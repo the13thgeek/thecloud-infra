@@ -488,11 +488,24 @@ module.exports = {
     (factionName, username) => `✅ Someone read the fine print. ${factionName}'s insurance kicks in, and the Black Diamond quietly ends up with @${username}.`
   ],
 
+  INSURANCE_SAVE_MESSAGES: [
+    (username1, username2, factionName) => `✅💎 The Black Diamond slips from @${username1}'s grasp during the struggle—but ${factionName}'s insurance plan activates! @${username2} dives in and catches it before it touches the floor!`,
+    (username1, username2, factionName) => `✅💎 For one terrifying moment, the Black Diamond is airborne. Then @${username2} appears with a spectacular catch! ${factionName}'s insurance comes through.`,
+    (username1, username2, factionName) => `✅💎 The steal attempt forces a fumble! Fortunately, @${username2} reacts instantly and snatches the Black Diamond out of mid-air. Insurance successful!`,
+    (username1, username2, factionName) => `✅💎 Disaster nearly strikes! The Black Diamond slips free from @${username1}—only for @${username2} to make a highlight-reel catch. ${factionName} keeps possession!`,
+    (username1, username2, factionName) => `✅💎 Gravity almost wins. Almost. @${username2} catches the Black Diamond inches above the marble floor. ${factionName}'s insurance pays dividends.`,
+    (username1, username2, factionName) => `✅💎 @${username1} loses control during the struggle, but the insurance contingency is already in motion. @${username2} secures the Black Diamond without missing a beat.`,
+    (username1, username2, factionName) => `✅💎 The Black Diamond tumbles through the air. The gallery gasps. @${username2} does not. One clean catch keeps ${factionName} alive.`,
+    (username1, username2, factionName) => `✅💎 The artifact leaves @${username1}'s hands... but never reaches the floor. @${username2} was exactly where ${factionName} needed them.`,
+    (username1, username2, factionName) => `✅💎 The insurance protocol triggers at the perfect moment. @${username2} catches the Black Diamond like this was rehearsed all week.`,
+    (username1, username2, factionName) => `✅💎 What looked like certain disaster becomes a spectacular recovery! @${username2} keeps the Black Diamond in ${factionName}'s hands.`,
+  ],
+
   CONTRABAND_WHISPER_MESSAGES: {
     lupin: (username) => `[HEIST] 🎭 THE LUPIN PROTOCOL acquired. Your next steal attempt gets a serious edge — 70% success, 28% fail, 2% drop. This triggers automatically on your next !steal, no action needed. Single-use — it's gone after that one attempt, win or lose.`,
     smokescreen: (username) => `[HEIST] 💨 SMOKESCREEN acquired. The next time someone tries to steal the Black Diamond from you, it auto-fails — no roll, no risk. Triggers automatically the moment someone attempts to steal from you. Single-use — it's gone after blocking that one attempt.`,
-    flashpoint: (username) => `[HEIST] 🔥 FLASHPOINT acquired. Type !use to force the Black Diamond to drop immediately, bypassing the timer completely — wherever it currently is. Single-use — gone the moment you trigger it. Use it wisely. Or chaotically. Your call.`,
-    intel: (username) => `[HEIST] 🕵️ INTEL acquired. Type !use to request a report on which faction currently holds the Black Diamond. Reports may be unreliable if the target faction has Firewall active. Single-use — consumed the moment you ask, regardless of the answer you get.`,
+    flashpoint: (username) => `[HEIST] 🚨 FLASHPOINT acquired. Type !use to force the Black Diamond to drop immediately, bypassing the timer completely — wherever it currently is. Single-use — gone the moment you trigger it. Use it wisely. Or chaotically. Your call.`,
+    intel: (username) => `[HEIST] 📡 INTEL acquired. Type !use to request a report on which faction currently holds the Black Diamond. Reports may be unreliable if the target faction has Firewall active. Single-use — consumed the moment you ask, regardless of the answer you get.`,
     firewall: (username) => `[HEIST] 🛡️ FIREWALL acquired. Type !use to arm it. Once armed, it protects your entire faction from the next Intel attempt against you — auto-blocking or feeding them false information. Single-use — gone the moment it intercepts one Intel attempt.`,
     insurance: (username) => `[HEIST] ✅ INSURANCE acquired. Type !use to activate the policy. Once active, it protects your entire faction from one timer-expiry or steal-fumble drop — the diamond auto-passes to a random teammate instead of hitting the floor. Fine print: does NOT cover Flashpoint. Single-use — gone the moment it pays out.`
   },
@@ -605,6 +618,82 @@ module.exports = {
     (username) => `That's already armed, @${username}. Sit tight.`,
     (username) => `@${username} tries to activate something that's already running. The system doesn't work that way.`,
     (username) => `Already active, @${username}. The crew appreciates the enthusiasm, but it's done.`
+  ],
+
+  FLASHPOINT_TRIGGER_MESSAGES: [
+    (aggressor, holder) => `⚠️🚨 @${aggressor} detonates a Flashpoint! The museum's security grid collapses. @${holder} loses their grip on the Black Diamond as it hits the floor. Everyone move!!`,
+    (aggressor, holder) => `⚠️🚨 EMP triggered by @${aggressor}! The building goes dark. @${holder} can't hold on. The Black Diamond is on the floor!!`,
+    (aggressor, holder) => `⚠️🚨 @${aggressor} pulls the pin! A security surge rips through the gallery. @${holder} never saw it coming. The Black Diamond is loose!!`,
+    (aggressor, holder) => `⚠️🚨 Flashpoint detonated by @${aggressor}! @${holder} loses the diamond in the chaos. The clock has reset. Move fast!!`,
+    (aggressor, holder) => `⚠️🚨 @${aggressor} activates the Flashpoint! The containment field collapses around @${holder}. The Black Diamond hits the floor. It's anyone's game!!`,
+    (aggressor, holder) => `⚠️🚨 Security collapse initiated by @${aggressor}! @${holder} is caught in the blackout. The Black Diamond is down!!`,
+    (aggressor, holder) => `⚠️🚨 @${aggressor} triggered a Flashpoint! @${holder} barely had time to react. The Black Diamond is on the floor and it's anyone's game!!`
+  ],
+
+  FLASHPOINT_OWN_FACTION_MESSAGES: [
+    (username, holder) => `⚠️🚨 @${username} detonates a Flashpoint! On their own faction. While @${holder} was holding the diamond. We're not going to talk about this!!`,
+    (username, holder) => `⚠️🚨 @${username}! @${holder} is on your team. The diamond was yours. ...Was.`,
+    (username, holder) => `⚠️🚨 Flashpoint triggered by @${username}! Against @${holder}. Their own teammate. The crew is filing a formal complaint.`,
+    (username, holder) => `⚠️🚨 @${username} just Flashpointed their own faction! @${holder} had the diamond. Had. The narrator needs a moment...`,
+    (username, holder) => `⚠️🚨 In all the heists. In all the museums. In all the cities in the world. @${username} walks into this one and Flashpoints @${holder}. Their own teammate. Remarkable!`,
+    (username, holder) => `⚠️🚨 @${username} activates Flashpoint. The target: @${holder}. Their faction. Their diamond. Their problem now!`,
+    (username, holder) => `⚠️🚨 Bold strategy from @${username}! Catastrophically wrong, but bold. @${holder} had the diamond. The floor has it now. You're welcome, everyone else.`
+  ],
+
+  FLASHPOINT_NO_HOLDER_MESSAGES: [
+    (username) => `⁉️ @${username} triggers the Flashpoint. Nothing happens. The Black Diamond is already on the floor. Smooth.`,
+    (username) => `⁉️ @${username} detonates the Flashpoint into an empty room. The Black Diamond isn't even in play. Item wasted.`,
+    (username) => `⁉️ No holder, no drop. @${username} just burned a perfectly good Flashpoint on absolutely nothing.`,
+    (username) => `⁉️ @${username} pulls the trigger on the Flashpoint. The floor is already empty. The crew is speechless.`,
+    (username) => `⁉️ That's a wasted item, @${username}. The Black Diamond isn't being held by anyone right now. Read the room.`
+  ],
+
+  ITEM_ARM_MESSAGES: [
+    (username, factionName) => `@${username} makes a quiet adjustment to ${factionName}'s operations. Nothing to see here.`,
+    (username, factionName) => `@${username} files some paperwork on behalf of ${factionName}. The crew carries on.`,
+    (username, factionName) => `${factionName} tightens up internally. @${username} handles it without a word.`,
+    (username, factionName) => `@${username} makes a move behind the scenes. ${factionName} acknowledges it and moves on.`,
+    (username, factionName) => `A quiet update from @${username}. ${factionName} is... adjusted. That's all.`
+  ],
+
+  INTEL_CORRUPTED_MESSAGES: [
+    () => `📡 INTEL REPORT — Scanning faction activity... Triangulating signal... Holder identified as ▓░▒ [SIGNAL LOST] ▒░▓ [RECONNECTING...]`,
+    () => `📡 INTEL REPORT — Biometric trace active. Target faction located. Designation: ????? [DATA CORRUPTED] R3p0rt t3rm1n@t3d.`,
+    () => `📡 INTEL REPORT — Source confirmed. Operative identified. Faction: [SIGNAL LOST] ▓▓░░ N0 us3@bl3 d@t@ r3c0v3r3d.`,
+    () => `📡 INTEL REPORT — Decryption not applied. Raw transmission data follows: 4F 52 42 49 54 41 4C ██ A7 09 FF 32 88 ▒▒▒ 00101010 No readable intelligence recovered.`,
+    () => `📡 INTEL REPORT — Opening intelligence packet... PK���▒▒▒ [Content compressed] ÿØÿàJFIF %PDF-1.7 ELF▒▓█ File structure incompatible with analysis.`,
+    () => `📡 INTEL REPORT — Trace complete. The Black Diamond is currently in possession of... [RECONNECTING...] ????? >> NULL >> F33d l0st.`,
+    () => `📡 INTEL REPORT — Scanning... Signal strong. Faction activity detected. Holder is... ▒░▓ C0mm5 c0mpr0m1s3d. R3p0rt unavailable. ▓░▒`,
+    () => `📡 INTEL REPORT — BLACK_DIAMOND_TRACE.dat opened successfully.  ▒▓█▓▒░ 9A-F0-22-??-H0LD3R-?? ░▒▓█▓▒  The artifact is located. The report is not.`,
+    () => `📡 INTEL REPORT — Recovered Intel file appears intact.  First 16 bytes:  4D 59 53 54 45 52 59 00 00 FF A9 ▒░▓  Remaining contents classified as unreadable.`,
+    () => `📡 INTEL REPORT — Biometric lock confirmed. The Black Diamond trace leads to... [SIGNAL LOST] ????? [FAILED] D@t@ str3@m 1nt3rrupt3d.`,
+    () => `📡 INTEL REPORT — Operative located. Faction designation: R̸E̵P̴O̷R̸T̵ ▓░ NULL ░▓ The d@t@ d03sn't l13. It just... isn't th3r3.`,
+    () => `📡 INTEL REPORT — Transmission opened. Payload format unrecognized. þÿÿ\u0000\u0003▒▓█\u0007A9F4-██-0011-ΞΞΞ H0LD3R::%$#@!▒░▓ END OF STREAM.`,
+    () => `📡 INTEL REPORT — Raw data stream received: 01001000 01101111 01101100 01100100 01100101 01110010 ▒░▒░▒░▒░▒░▒░ 0x00 0xFF 0xA3 0x91 0x00 Translation unavailable.`,
+    () => `📡 INTEL REPORT — Attempting to display recovered Intel file... ████████████████ ╬╬╬╬╬╬╬╬╬╬╬╬╬╬ � � � ▓▒░ ▓▒░ � � File contents cannot be rendered.`,
+  ],
+
+  INTEL_REPORT_MESSAGES: [
+    (factionName) => `📡 INTEL REPORT — Biometric trace active. Signal locked. The Black Diamond is currently in possession of ${factionName}.`,
+    (factionName) => `📡 INTEL REPORT — Scanning complete. Faction activity confirmed. The Black Diamond has been traced to ${factionName}.`,
+    (factionName) => `📡 INTEL REPORT — Operative located. The Black Diamond is with ${factionName}. Source verified.`,
+    (factionName) => `📡 INTEL REPORT — Trace complete. Holder identified. ${factionName} is currently in possession of the Black Diamond. Act accordingly.`,
+    (factionName) => `📡 INTEL REPORT — Signal strong. No interference detected. The Black Diamond is with ${factionName}. You didn't hear this from us.`,
+    (factionName) => `📡 INTEL REPORT — Biometric lock confirmed. The Black Diamond trace leads directly to ${factionName}. What you do with this is your business.`,
+    (factionName) => `📡 INTEL REPORT — Source reliable. Faction designation: ${factionName}. The Black Diamond is theirs — for now.`,
+    (factionName) => `📡 INTEL REPORT — Deep scan complete. Artifact signature matched. Current holder faction: ${factionName}. Proceed with caution.`,
+    (factionName) => `📡 INTEL REPORT — Intelligence package decrypted. Confidence rating: high. The Black Diamond is currently under ${factionName} control.`,
+    (factionName) => `📡 INTEL REPORT — Tracking beacon synchronized. Movement pattern confirmed. ${factionName} has possession of the Black Diamond.`,
+    (factionName) => `📡 INTEL REPORT — We have eyes on the artifact. We have the location. ${factionName} is the current holder of the Black Diamond.`,
+    (factionName) => `📡 INTEL REPORT — The signal has stopped moving. The artifact has a new home. ${factionName} currently holds possession.`,
+    (factionName) => `📡 INTEL REPORT — Confirmed: ${factionName}. The Black Diamond is no longer a mystery.`,
+    (factionName) => `📡 INTEL REPORT — Intelligence recovered from multiple sources. All paths lead to ${factionName}.`,
+    (factionName) => `📡 INTEL REPORT — Current artifact status: ACTIVE. Current holder: ${factionName}. Recommendation: do not ignore this information.`,
+    (factionName) => `📡 INTEL REPORT — Security network accessed. Artifact ownership updated. ${factionName} is the current holder.`,
+    (factionName) => `📡 INTEL REPORT — Satellite sweep complete. No conflicting signals detected. The Black Diamond remains with ${factionName}.`,
+    (factionName) => `📡 INTEL REPORT — Field intelligence confirmed. ${factionName} is carrying the artifact. The clock is now their enemy.`,
+    (factionName) => `📡 INTEL REPORT — Artifact signature isolated. Destination confirmed: ${factionName}. Handle this information carefully.`,
+    (factionName) => `📡 INTEL REPORT — Final verification complete. ${factionName} has possession of the Black Diamond. Intelligence window remains open.`,
   ],
 
   DIAMOND_DROP_MESSAGE: [

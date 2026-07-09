@@ -31,12 +31,12 @@ class TourneyService {
 
     // Contraband
     this.contraBandRates = {
-      lupin: 45,      // original: 35
-      smokescreen: 35, // original: 27
-      insurance: 20,   // original: 15
-      flashpoint: 0,   // temp disabled — original: 7
-      intel: 0,        // temp disabled — original: 8
-      firewall: 0      // temp disabled — original: 8
+      lupin: 30,      
+      smokescreen: 30,
+      insurance: 15,
+      flashpoint: 5,
+      intel: 10,
+      firewall: 10
     };
   }
 
@@ -358,8 +358,11 @@ class TourneyService {
             factionId: newHolder.team_number,
             userId: newHolder.user_id
           }
-
-          message = this.getRandomMessage('INSURANCE_TRIGGER_MESSAGES',  this.diamondHolder.faction, newHolder.twitch_display_name);
+          if (source === 'fumble') {
+            message = this.getRandomMessage('INSURANCE_SAVE_MESSAGES', this.lastHolder.displayName, newHolder.twitch_display_name, this.lastHolder.faction);
+          } else {
+            message = this.getRandomMessage('INSURANCE_TRIGGER_MESSAGES', this.diamondHolder.faction, newHolder.twitch_display_name);  
+          }
           WebSocketService.broadcast({ type: 'HEIST_PASS', message });
           return {
             intercepted: true, message, newHolder: this.diamondHolder 
@@ -368,8 +371,10 @@ class TourneyService {
       }
     }
 
-    if (stealUser) {
+    if (stealUser && source !== 'flashpoint') {
       message = this.getRandomMessage('STEAL_DROP_MESSAGES', stealUser, this.diamondHolder.displayName);
+    } else if(stealUser && source === 'flashpoint') {
+      message = this.getRandomMessage('FLASHPOINT_TRIGGER_MESSAGES', stealUser, this.diamondHolder.displayName);
     } else {
       message = this.getRandomMessage('DROP_MESSAGES', this.diamondHolder.displayName);
     }

@@ -31,9 +31,10 @@ router.post('/init', asyncHandler(async (req, res) => {
 
 // POST /tourney/drop - signal start of round or perform drop
 router.post('/drop', asyncHandler(async (req, res) => {
-  const result = await TourneyService.dropDiamond();
+  const { twitch_id, twitch_display_name, twitch_roles, twitch_avatar, source } = req.body;
+  const result = await TourneyService.dropDiamond(null, "drop");
   Logger.info(result.message);
-  return ResponseHandler.success(res, result, 'Diamond dropped');
+  return ResponseHandler.success(res, result, result.message);
 }));
 
 // POST /tourney/grab
@@ -128,19 +129,19 @@ router.post('/steal', asyncHandler(async (req, res) => {
       // Check if target user is specified  
       if (!targetUser) {
         const message = TourneyService.getRandomMessage('STEAL_MISSING_TARGET_MESSAGES', twitch_display_name);
-        return ResponseHandler.error(res, message, 403);
+        return ResponseHandler.error(res, message, 403, { outcome: 'invalid' });
       }
 
       // Check if game is active and/or if the diamond is currently held by someone
       if( !TourneyService.isActive || !TourneyService.getDiamondHolder() ) {
         const message = TourneyService.getRandomMessage('PREMATURE_GRAB_MESSAGES', twitch_display_name);
-        return ResponseHandler.error(res, message, 403);
+        return ResponseHandler.error(res, message, 403, { outcome: 'invalid' });
       }
 
       // Check is user is trying to steal from self  
       if (twitch_display_name.toLowerCase() === targetUser && currentHolder.displayName.toLowerCase() === targetUser) {   
         const message = TourneyService.getRandomMessage('STEAL_SELF_MESSAGES', twitch_display_name);
-        return ResponseHandler.error(res, message, 403);
+        return ResponseHandler.error(res, message, 403, { outcome: 'invalid' });
       }
 
       // Check if user is on a faction
@@ -155,7 +156,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
       
       if (userFaction.team_number === targetUserFaction.team_number) {
         const message = TourneyService.getRandomMessage('STEAL_TEAMMATE_MESSAGES', twitch_display_name, targetUser);
-        return ResponseHandler.error(res, message, 403);
+        return ResponseHandler.error(res, message, 403, { outcome: 'invalid' });
       }
 
       // Check if user is holding the diamond
@@ -165,7 +166,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
         TourneyService.awardPoints(targetUser, 1, 'False Accusation Bonus', 'HEIST_STEAL_FALSE');
         
         const message = TourneyService.getRandomMessage('STEAL_INVALID_MESSAGES', twitch_display_name, targetUser);
-        return ResponseHandler.error(res, message, 403);
+        return ResponseHandler.error(res, message, 403, { outcome: 'invalid' });
       }
 
       // Check stealer's Lupin
@@ -186,7 +187,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
       if (holderItem === 'smokescreen') {
         await TourneyService.clearActiveItem(currentHolder.displayName);
         const message = TourneyService.getRandomMessage('SMOKESCREEN_BLOCK_MESSAGES', twitch_display_name, targetUser);
-        return ResponseHandler.error(res, message, 403);
+        return ResponseHandler.error(res, message, 403, { outcome: 'blocked' });
       }
       
       // All checks passed, attempt steal, roll dice
@@ -196,10 +197,8 @@ router.post('/steal', asyncHandler(async (req, res) => {
 
       if (roll <= drop) {
         // 5% fumble - current holder drops the diamond
-        let outputres = await TourneyService.dropDiamond(twitch_display_name);
-        let message = outputres.message;
-        //return ResponseHandler.success(res, { outcome: 'drop', message }, message);
-        return ResponseHandler.error(res, message, 403);
+        const result = await TourneyService.dropDiamond(twitch_display_name, 'fumble');
+        return ResponseHandler.error(res, result.message, 403, { outcome: 'fumble', intercepted: result.intercepted })
       } else if (roll <= drop + success) {
         // 50% success - steal successful
         TourneyService.diamondHolder = {
@@ -222,7 +221,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
         // 45% failure - steal fails
         const message = TourneyService.getRandomMessage('STEAL_FAIL_MESSAGES', twitch_display_name, targetUser);
         //return ResponseHandler.success(res, { outcome: 'fail', message }, message);
-        return ResponseHandler.error(res, message, 403);
+        return ResponseHandler.error(res, message, 403, { outcome: 'fail' });
       }
 
     } catch(err) {
@@ -392,8 +391,8 @@ router.post('/use', asyncHandler(async (req, res) => {
     case 'insurance0': {
       await TourneyService.assignActiveItem(user.id, 'insurance1');
       const userFaction = await TourneyService.getUserFaction(twitch_display_name);
-      const message = TourneyService.getRandomMessage('INSURANCE_ARM_MESSAGES', twitch_display_name, userFaction.team_name);
-      return ResponseHandler.success(res, { message }, message);
+      const message = TourneyService.getRandomMessage('ITEM_ARM_MESSAGES', twitch_display_name, userFaction.team_name);
+      return ResponseHandler.success(res, { item: 'insurance', message }, message);
     }
 
     case 'insurance1': {
@@ -411,9 +410,89 @@ router.post('/use', asyncHandler(async (req, res) => {
       return ResponseHandler.error(res, message, 403);
     }
 
-    // case 'firewall0': ... (later)
-    // case 'flashpoint': ... (later)
-    // case 'intel': ... (later)
+    case 'flashpoint': {
+      if( !TourneyService.getDiamondHolder() ) {
+        await TourneyService.clearActiveItem(twitch_display_name);
+        const message = TourneyService.getRandomMessage('FLASHPOINT_NO_HOLDER_MESSAGES', twitch_display_name);
+        return ResponseHandler.error(res, message, 403);
+      }
+
+      const holder = TourneyService.getDiamondHolder();
+      const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+      const isOwnFaction = userFaction.team_number === holder.factionId;
+
+      const result = await TourneyService.dropDiamond(twitch_display_name, 'flashpoint');
+      await TourneyService.clearActiveItem(twitch_display_name);
+
+      Logger.info(`Flashpoint used by @${twitch_display_name}. Diamond dropped.`);
+      Logger.info(JSON.stringify(result));
+
+      const message = isOwnFaction
+        ? TourneyService.getRandomMessage('FLASHPOINT_OWN_FACTION_MESSAGES', twitch_display_name, holder.displayName)
+        : result.message;
+
+      return ResponseHandler.success(res, { item: 'flashpoint', message, intercepted: result.intercepted }, message);
+    }
+
+    case 'firewall0': {
+      await TourneyService.assignActiveItem(user.id, 'firewall1');
+      const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+      const message = TourneyService.getRandomMessage('ITEM_ARM_MESSAGES', twitch_display_name, userFaction.team_name);
+      return ResponseHandler.success(res, { item: 'firewall', message }, message);
+    }
+
+    case 'firewall1': {
+      const message = TourneyService.getRandomMessage('ALREADY_ACTIVE_MESSAGES', twitch_display_name);
+      return ResponseHandler.error(res, message, 403);
+    }
+
+    case 'intel': {
+      // consume item
+      await TourneyService.clearActiveItem(twitch_display_name);
+
+      // If nobody is holding the diamond, return corrupt intel message
+      const currentHolder = TourneyService.getDiamondHolder();
+      if (!currentHolder) {
+        const message = TourneyService.getRandomMessage('INTEL_CORRUPTED_MESSAGES');
+        return ResponseHandler.success(res, { item: 'intel', message }, message);
+      }
+
+      // Get holder faction
+      const holderFaction = await TourneyService.getUserFaction(currentHolder.displayName);
+      // Check if holder's faction has a firewall active
+      const firewallHolder = await TourneyService.getFactionActiveItemHolder(holderFaction.team_number, 'firewall1');
+
+      if(firewallHolder) {
+        // Consume firewall item
+        await TourneyService.clearActiveItem(firewallHolder.twitch_display_name);
+
+        // Lie; roll 70/30 for corrupted intel type
+        const roll = Math.random() * 100;
+
+        if( roll <= 70 ) {
+          // 70% lie
+          const userFaction = await TourneyService.getUserFaction(twitch_display_name);
+          const allFactions = [1, 2, 3];
+          const excludedFactions = [...new Set([holderFaction.team_number, userFaction.team_number])];
+          const remainingFactions = allFactions.filter(f => !excludedFactions.includes(f));
+          
+          // If same faction (requester holds diamond), RNG between the two remaining
+          const lyingFactionId = remainingFactions[Math.floor(Math.random() * remainingFactions.length)];
+          const lyingFactionName = TourneyService.TEAM_NAMES[lyingFactionId];
+
+          const message = TourneyService.getRandomMessage('INTEL_REPORT_MESSAGES', lyingFactionName);
+          return ResponseHandler.success(res, { item: 'intel', message }, message);
+        } else {
+          // 30% garbled intel
+          const message = TourneyService.getRandomMessage('INTEL_CORRUPTED_MESSAGES');
+          return ResponseHandler.success(res, { item: 'intel', message }, message);
+        }
+      }
+
+      // If no firewall, return true intel
+      const message = TourneyService.getRandomMessage('INTEL_REPORT_MESSAGES', holderFaction.team_name);
+      return ResponseHandler.success(res, { item: 'intel', message }, message);
+    }
 
     default: {
       const message = TourneyService.getRandomMessage('NO_ACTIVE_ITEM_MESSAGES', twitch_display_name);
