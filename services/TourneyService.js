@@ -31,10 +31,10 @@ class TourneyService {
 
     // Contraband
     this.contraBandRates = {
-      lupin: 30,      
-      smokescreen: 30,
-      insurance: 15,
-      flashpoint: 5,
+      lupin: 20,
+      smokescreen: 20,
+      insurance: 20,
+      flashpoint: 20,
       intel: 10,
       firewall: 10
     };

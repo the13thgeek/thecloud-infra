@@ -269,9 +269,29 @@ router.post('/pass', asyncHandler(async (req, res) => {
       // Check if user is passing to someone on the other team
       const userFaction = await TourneyService.getUserFaction(twitch_display_name);
       if (userFaction.team_number !== targetUserFaction.team_number) {
-        const message = TourneyService.getRandomMessage('PASS_WRONG_FACTION_MESSAGES', twitch_display_name, targetUser);
-        return ResponseHandler.error(res, message, 403);
+        // Enemy pass — recipient gets +2, passer gets nothing
+        const newHolder = await UserService.getUserByDisplayName(targetUser);
+        TourneyService.lastPasser = twitch_display_name;
+        TourneyService.diamondHolder = {
+          twitchId: newHolder.twitch_id,
+          displayName: newHolder.twitch_display_name,
+          avatar: newHolder.twitch_avatar,
+          faction: targetUserFaction.team_name,
+          factionId: targetUserFaction.team_number,
+          userId: newHolder.id
+        };
+
+        TourneyService.awardPoints(targetUser, 2, 'Enemy Pass Bonus', 'HEIST_ENEMY_PASS');
+
+        const message = TourneyService.getRandomMessage('PASS_ENEMY_FACTION_MESSAGES', twitch_display_name, targetUser, targetUserFaction.team_name);
+        return ResponseHandler.success(res, { faction: targetUserFaction.team_number, outcome: 'enemy_pass' }, message);
       }
+
+      // Old rule - keeping old block code
+      // if (userFaction.team_number !== targetUserFaction.team_number) {
+      //   const message = TourneyService.getRandomMessage('PASS_WRONG_FACTION_MESSAGES', twitch_display_name, targetUser);
+      //   return ResponseHandler.error(res, message, 403);
+      // }
 
       // Check if the user isn't passing it back to the person who passed it to them
       if( TourneyService.lastPasser === targetUser ) {
@@ -338,7 +358,7 @@ router.post('/end-round', asyncHandler(async (req, res) => {
 
   if (currentHolder) {
     // Award points to current holder for end of round
-    TourneyService.awardPoints(currentHolder.displayName, 5, 'End of Round Bonus', 'HEIST_END_ROUND');
+    TourneyService.awardPoints(currentHolder.displayName, 10, 'End of Round Bonus', 'HEIST_END_ROUND');
   } else {
     Logger.info('Round ended with no diamond holder');
     return ResponseHandler.error(res, 'Round ended with no diamond holder.', 403);
@@ -500,6 +520,19 @@ router.post('/use', asyncHandler(async (req, res) => {
     }   
 
   }
+}));
+
+// POST /tourney/tick
+router.post('/tick', asyncHandler(async (req, res) => {
+  const holder = TourneyService.getDiamondHolder();
+
+  if(!holder) {
+    return ResponseHandler.error(res, 'No current diamond holder.', 403);
+  }
+
+  TourneyService.awardPoints(holder.displayName, 1, 'Diamond Hold Tick', 'HEIST_HOLD_TICK');
+  return ResponseHandler.success(res, { displayName: holder.displayName, faction: holder.faction }, 'Hold tick');
+
 }));
 
 module.exports = router;
