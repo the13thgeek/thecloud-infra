@@ -177,7 +177,7 @@ router.post('/steal', asyncHandler(async (req, res) => {
 
       if (stealerItem === 'lupin') {
         usingLupin = true;
-        stealRates = { drop: 2, success: 70, fail: 28 };
+        stealRates = { drop: 2, success: 85, fail: 13 };
         Logger.debug(`if (stealerItem === 'lupin')`);
         await TourneyService.clearActiveItem(twitch_display_name);
       }
