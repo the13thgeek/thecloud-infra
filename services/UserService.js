@@ -6,7 +6,7 @@ class UserService {
     // EXP multipliers
     this.expStandard = 1.0;
     this.expPremium = 1.15;
-    this.expGlobal = 2.0;
+    this.expGlobal = 1.0;
   }
 
   /**
