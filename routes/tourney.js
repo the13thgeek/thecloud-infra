@@ -281,7 +281,7 @@ router.post('/pass', asyncHandler(async (req, res) => {
           userId: newHolder.id
         };
 
-        TourneyService.awardPoints(targetUser, 2, 'Enemy Pass Bonus', 'HEIST_ENEMY_PASS');
+        TourneyService.awardPoints(targetUser, 2, 'Enemy Pass Bonus', 'HEIST_PASS');
 
         const message = TourneyService.getRandomMessage('PASS_ENEMY_FACTION_MESSAGES', twitch_display_name, targetUser, targetUserFaction.team_name);
         return ResponseHandler.success(res, { faction: targetUserFaction.team_number, outcome: 'enemy_pass' }, message);

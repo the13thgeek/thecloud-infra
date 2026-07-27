@@ -169,6 +169,8 @@ class TourneyService {
   async awardPoints(userName, points, details = '', broadcastName = 'SCORE_UPDATE') {
     const faction = await this.getUserFaction(userName);
 
+    logger.info(`awardPoints(): ${userName} [+${points}]`);
+
     if (!faction.success) {
       return {
         success: false,
@@ -177,13 +179,13 @@ class TourneyService {
     }    
 
     // Award points   
-    await db.execute(
-      'UPDATE tbl_tourney SET points = points + ?, last_update = CURRENT_TIMESTAMP WHERE user_id = ?',
-      [points, faction.user_id]
-    );
+    // await db.execute(
+    //   'UPDATE tbl_tourney SET points = points + ?, last_update = CURRENT_TIMESTAMP WHERE user_id = ?',
+    //   [points, faction.user_id]
+    // );
 
     // Log score
-    await this.logScore(userName, points, details, true);
+    //await this.logScore(userName, points, details, true);
 
     // Broadcast update
     WebSocketService.broadcast({ type: broadcastName });
