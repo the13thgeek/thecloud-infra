@@ -479,11 +479,11 @@ module.exports = {
   ],
 
   ROUND_END_MESSAGES: [
-    (username, factionName) => `💎 That's a wrap! @${username} of ${factionName} holds the Black Diamond as the dust settles. +5 points. Well played.`,
-    (username, factionName) => `💎 The round is over. @${username} kept their grip to the end. ${factionName} walks away with the bonus. +5 points.`,
-    (username, factionName) => `💎 @${username} outlasted everyone. ${factionName} takes the round. The Black Diamond and +5 points are theirs.`,
-    (username, factionName) => `💎 When the smoke cleared, @${username} was still holding. ${factionName} claims the round bonus. +5 points.`,
-    (username, factionName) => `💎 The Black Diamond stays with @${username} as the round closes. ${factionName} earns the +5. Don't spend it all in one place.`
+    (username, factionName) => `💎 That's a wrap! @${username} of ${factionName} holds the Black Diamond as the dust settles. +10 points. Well played.`,
+    (username, factionName) => `💎 The round is over. @${username} kept their grip to the end. ${factionName} walks away with the bonus. +10 points.`,
+    (username, factionName) => `💎 @${username} outlasted everyone. ${factionName} takes the round. The Black Diamond and +10 points are theirs.`,
+    (username, factionName) => `💎 When the smoke cleared, @${username} was still holding. ${factionName} claims the round bonus. +10 points.`,
+    (username, factionName) => `💎 The Black Diamond stays with @${username} as the round closes. ${factionName} earns the +10. Don't spend it all in one place.`
   ],
 
   CONTRABAND_REDEEM_MESSAGES: [
