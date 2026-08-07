@@ -51,6 +51,48 @@ module.exports = {
     (username, factionName) => `@${username} signed on with ${factionName}. No going back now.`
   ],
 
+  TOURNEY_STATUS_MESSAGES: [
+    (username, factionName, points) => `@${username} ran with ${factionName} and walked away with ${points} points. The heist is over. Sigma Collective won. You can go home now.`,
+    (username, factionName, points) => `${factionName}. ${points} points. That was @${username}'s run. The Black Diamond has been secured. The museum is closed.`,
+    (username, factionName, points) => `@${username} — ${factionName}, ${points} points. The event wrapped. Sigma took the W. The narrator is on vacation.`,
+    (username, factionName, points) => `The records show @${username} of ${factionName} with ${points} points. The heist concluded. Sigma Collective won. Please exit through the gift shop.`,
+  ],
+
+  POST_EVENT_MESSAGES: [
+    // A) Not in the loop
+    (username, command) => `@${username} just typed ${command}. The event ended. Sigma Collective won. This information was available.`,
+    (username, command) => `@${username} showing up to the heist two weeks late with Starbucks. The museum is closed. Sigma won. Go home.`,
+    (username, command) => `@${username} typed ${command} like the event didn't wrap up already. It wrapped up. Sigma Collective took it. The narrator is tired.`,
+    (username, command) => `@${username} missed the memo. And the event. Sigma Collective won. The Black Diamond has been secured. There is nothing left to ${command}.`,
+    (username, command) => `@${username} is giving "just got off a 2-week coma" energy. The heist is over. Sigma won. Please update your calendar.`,
+
+    // B) Nostalgia
+    (username, command) => `@${username} really said "one more heist for old times' sake." The narrator is not immune to this. Unfortunately the event is over. Sigma won.`,
+    (username, command) => `@${username} typed ${command} and felt something. The narrator felt something too. It doesn't matter. The event is over. Sigma Collective won.`,
+    (username, command) => `@${username} coming back to the museum after closing time. The diamond is gone. Sigma has it. The security guard (narrator) is asking you to leave.`,
+    (username, command) => `@${username} misses the heist. The narrator misses the heist. This changes nothing. Sigma Collective won. The Black Diamond is retired.`,
+    (username, command) => `@${username} typed ${command} and stared at the screen for a moment. The narrator understands. It was a good run. Sigma won though. It's over.`,
+
+    // C) Just wants to play
+    (username, command) => `@${username} said "I just want to do one steal." The answer is no. Sigma won. The event is over. The narrator is not accepting requests.`,
+    (username, command) => `@${username} really typed ${command} just to see what would happen. This happened. Sigma Collective won. Now you know.`,
+    (username, command) => `@${username} is treating this like a post-credits scene. There is no post-credits scene. Sigma won. Roll credits.`,
+    (username, command) => `@${username} typed ${command} with zero hesitation. Respectable. Wrong. But respectable. Sigma Collective won the event. The heist is closed.`,
+    (username, command) => `@${username} said "the game never ends in my heart." The narrator said "Sigma Collective won." Both things are true.`,
+
+    // D) Going ham
+    (username, command) => `@${username} is the one person still in the office after the Christmas party ended. Everyone went home. Sigma won. Turn off the lights when you leave.`,
+    (username, command) => `@${username} typed ${command} into the void. The void typed back: Sigma Collective won. Delta tried. Zeta tried harder. Sigma won.`,
+    (username, command) => `@${username} really said "let me cook" two weeks after the kitchen closed. Sigma Collective ate already. There are no leftovers.`,
+    (username, command) => `@${username} is giving Miss Havisham energy — frozen in time, still trying to run the heist. The clocks have stopped. Sigma won. Let it go.`,
+    (username, command) => `@${username} typed ${command}. Somewhere, a Delta Syndicate member felt a single tear roll down their face. Sigma won. It's okay. Next year.`,
+    (username, command) => `@${username} activated a command in a game that has already ended. This is the video game equivalent of pressing buttons on an unplugged controller. Sigma won.`,
+    (username, command) => `@${username} said "one more game" like it's 2am on a school night. The event is over. Sigma Collective won. The narrator is going to bed.`,
+    (username, command) => `@${username} is speedrunning the grief stages. Denial: typed ${command}. Acceptance: Sigma Collective won. You'll get there.`,
+    (username, command) => `@${username} really said "new year new heist" except it's not new year and there is no heist. Sigma won. See you next year.`,
+    (username, command) => `@${username} typed ${command} and the ghost of the Black Diamond stirred briefly. Then remembered Sigma Collective won. And went back to sleep.`,
+  ],
+
   DROP_MESSAGES : [
     (username) => `⚠️ The Black Diamond slips from @${username}'s grasp and clatters to the ground!`,
     (username) => `⚠️ Oh no! @${username} fumbled the Black Diamond and it fell to the floor!`,

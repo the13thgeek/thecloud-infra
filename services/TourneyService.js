@@ -75,11 +75,12 @@ class TourneyService {
     );
 
     if (existing) {
+      const message = this.getRandomMessage('TOURNEY_STATUS_MESSAGES', userName, this.TEAM_NAMES[existing.team_number], existing.points);
       return {
         success: false,
         team_number: existing.team_number,
         team_name: this.TEAM_NAMES[existing.team_number],
-        message: `You are already assigned to the ${this.TEAM_NAMES[existing.team_number]}! The Black Diamond knows your mark. [Points: ${existing.points}]`
+        message: message
       };
     }
 
