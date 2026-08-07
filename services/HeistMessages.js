@@ -100,6 +100,23 @@ module.exports = {
     (username) => `⚠️ Yikes! @${username} lost hold of the Black Diamond and it crashes down!`
   ],
 
+  TOURNEY_NOT_REGISTERED_MESSAGES: [
+    (username) => `@${username} typed !tourney after the event ended. There is no faction for you. There was a faction. You could have had a faction. Sigma won.`,
+    (username) => `@${username} showing up to the restaurant after it closed, didn't make a reservation, and the kitchen is gone. The event wrapped. Sigma Collective won. You missed it.`,
+    (username) => `@${username} was not registered for the event. The event is now over. These two facts are related. Sigma won. Next year, maybe.`,
+    (username) => `@${username} typed !tourney. The system searched for their faction. Found nothing. Because they never joined. Because the event is over. Sigma won. Condolences.`,
+    (username) => `@${username} really said "let me check my faction" with no faction to check. The Black Diamond Heist has concluded. Sigma Collective won. You were not there.`,
+    (username) => `@${username} missed the entire event and typed !tourney anyway. Respect the audacity. Zero points. No faction. Sigma won. See you next year.`,
+    (username) => `@${username} arrived at the museum after the heist, after the investigation, after the trial, and after the verdict. Sigma Collective won. The gift shop is also closed.`,
+    (username) => `@${username} is giving "I was going to start working out in January" energy. The event started. The event ended. Sigma won. @${username} was not in it.`,
+    (username) => `@${username} typed !tourney with the confidence of someone who participated. They did not participate. Sigma Collective won. The narrator is at a loss.`,
+    (username) => `No faction found for @${username}. No points. No record. No heist. Just vibes and the knowledge that Sigma Collective won while @${username} was elsewhere.`,
+    (username) => `@${username} asked "what faction am I in?" The answer is none. The follow-up answer is Sigma won. The final answer is maybe show up next year.`,
+    (username) => `@${username} speedran missing the entire event. New world record. Sigma Collective won. @${username} was not there to witness it. This is canon now.`,
+    (username) => `@${username} is the person who misses a group photo and asks for a copy anyway. There is no copy. There is no faction. Sigma won. Next year register early.`,
+    (username) => `@${username} typed !tourney into the aftermath of an event they weren't in. The narrator has nothing to report except: Sigma Collective won, and @${username} missed all of it.`,
+  ],
+
   GRAB_MESSAGES : [
     (username, factionName) => `💎 @${username} moves fast through the gallery and snatches the Black Diamond off the floor! ${factionName} is now on the grid. The clock starts!`,
     (username, factionName) => `💎 The Black Diamond doesn't stay on the floor for long. @${username} gets there first. ${factionName} has 30 minutes before the trace locks in!`,

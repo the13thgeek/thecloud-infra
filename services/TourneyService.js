@@ -84,43 +84,44 @@ class TourneyService {
       };
     }
 
-    // Get team counts for balancing
-    const teamCounts = await db.execute(`
-      SELECT t.team_number, COUNT(m.user_id) AS count
-      FROM (
-        SELECT 1 AS team_number UNION ALL
-        SELECT 2 UNION ALL
-        SELECT 3
-      ) AS t
-      LEFT JOIN tbl_tourney m ON t.team_number = m.team_number
-      GROUP BY t.team_number
-    `);
+    // // Get team counts for balancing
+    // const teamCounts = await db.execute(`
+    //   SELECT t.team_number, COUNT(m.user_id) AS count
+    //   FROM (
+    //     SELECT 1 AS team_number UNION ALL
+    //     SELECT 2 UNION ALL
+    //     SELECT 3
+    //   ) AS t
+    //   LEFT JOIN tbl_tourney m ON t.team_number = m.team_number
+    //   GROUP BY t.team_number
+    // `);
 
-    // Find teams with minimum members
-    const minCount = Math.min(...teamCounts.map(t => t.count));
-    const availableTeams = teamCounts
-      .filter(t => t.count === minCount)
-      .map(t => t.team_number);
+    // // Find teams with minimum members
+    // const minCount = Math.min(...teamCounts.map(t => t.count));
+    // const availableTeams = teamCounts
+    //   .filter(t => t.count === minCount)
+    //   .map(t => t.team_number);
 
-    // Random selection from available teams
-    const selectedTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)];
+    // // Random selection from available teams
+    // const selectedTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)];
 
-    // Register user
-    await db.execute(
-      'INSERT INTO tbl_tourney(user_id, team_number) VALUES (?, ?)',
-      [userId, selectedTeam]
-    );
+    // // Register user
+    // await db.execute(
+    //   'INSERT INTO tbl_tourney(user_id, team_number) VALUES (?, ?)',
+    //   [userId, selectedTeam]
+    // );
 
-    // Issue faction nameplate
-    const teamNameplateIds = { 1: 33, 2: 34, 3: 35 }; // Delta Syndicate, Sigma Collective, Zeta Enclave
-    const NameplateService = require('./NameplateService');
-    await NameplateService.addNameplateToUser(userId, teamNameplateIds[selectedTeam]);
+    // // Issue faction nameplate
+    // const teamNameplateIds = { 1: 33, 2: 34, 3: 35 }; // Delta Syndicate, Sigma Collective, Zeta Enclave
+    // const NameplateService = require('./NameplateService');
+    // await NameplateService.addNameplateToUser(userId, teamNameplateIds[selectedTeam]);
 
     return {
       success: true,
-      team_number: selectedTeam,
-      team_name: this.TEAM_NAMES[selectedTeam],
-      message: this.getRandomMessage('REGISTER_MESSAGES', userName, this.TEAM_NAMES[selectedTeam])
+      message: this.getRandomMessage('TOURNEY_NOT_REGISTERED_MESSAGES', userName)
+      //team_number: selectedTeam,
+      //team_name: this.TEAM_NAMES[selectedTeam],
+      //message: this.getRandomMessage('REGISTER_MESSAGES', userName, this.TEAM_NAMES[selectedTeam])
       //message: this.getRegisterMessage(userName, this.TEAM_NAMES[selectedTeam])
     };
   }
